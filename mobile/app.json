@@ -6,37 +6,35 @@
     "orientation": "portrait",
     "scheme": "smartguardian",
     "userInterfaceStyle": "automatic",
-
-    "ios": {
-      "supportsTablet": true
-    },
-
     "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#faf8fc"
-      },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.aravinth.smartguardian",
+      "googleServicesFile": "./google-services.json"
     },
 
     "web": {
-      "output": "static",
-      "backgroundColor": "#faf8fc"
+      "output": "static"
     },
 
     "plugins": [
       "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "backgroundColor": "#faf8fc",
-          "imageWidth": 120
-        }
-      ]
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth"
     ],
 
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "fb40926c-0e2c-4038-ab42-637fd3cc4b5b"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.aravinth.smartguardian",
+      "googleServicesFile": "./GoogleService-Info.plist"
     }
   }
 }
