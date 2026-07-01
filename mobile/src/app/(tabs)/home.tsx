@@ -1,8 +1,12 @@
 import { View, Text, Button } from "react-native";
 import { router } from "expo-router";
 import { getAuth, signOut } from "@react-native-firebase/auth";
+import { RootState } from "@/redux/store";
+import { useSelector } from "react-redux";
 
 export default function HomeScreen() {
+  const user = useSelector((state: RootState) => state.auth.user);
+
   const logout = async () => {
     const auth = getAuth();
 
@@ -21,6 +25,9 @@ export default function HomeScreen() {
         padding: 20,
       }}
     >
+      <Text>{user?.name}</Text>
+      <Text>{user?.phoneNumber}</Text>
+      <Text>{user?.role}</Text>
       <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 20 }}>
         Welcome to Smart Guardian 🎉
       </Text>

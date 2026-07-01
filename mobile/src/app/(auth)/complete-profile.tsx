@@ -61,8 +61,8 @@ export default function CompleteProfileScreen() {
 
       dispatch(
         setUser({
-          uid: response.user.uid,
-          phoneNumber: response.user.phoneNumber,
+          firebaseUid: response.user.firebase_uid,
+          phoneNumber: response.user.phone,
           name: response.user.name,
           email: response.user.email,
           role: response.user.role,

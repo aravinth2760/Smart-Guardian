@@ -5,6 +5,7 @@ export { default as OTPVerificationForm } from "./components/OTPVerificationForm
 
 // Hooks
 export { default as usePhoneAuth } from "./hooks/usePhoneAuth";
+export { useAuthBootstrap } from "./hooks/useAuthBootstrap";
 
 // Services
 export * from "./services/auth.service";

@@ -1,10 +1,12 @@
 import { Stack } from "expo-router";
-import ReduxProvider from "@/redux/provider";
 
-export default function RootLayout() {
+export default function AuthLayout() {
   return (
-    <ReduxProvider>
-      <Stack screenOptions={{ headerShown: false }} />
-    </ReduxProvider>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        animation: "slide_from_right",
+      }}
+    />
   );
 }

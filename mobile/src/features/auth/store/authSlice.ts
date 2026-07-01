@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface User {
-  uid: string;
+  firebaseUid: string;
   phoneNumber: string | null;
 
   name?: string;

@@ -9,7 +9,7 @@ export const checkUserByPhone = async (phone: string) => {
 };
 
 export const createUser = async (
-  firebaseUid: string,
+  firebase_uid: string,
   phone: string,
   name: string,
   email: string,
@@ -21,7 +21,7 @@ export const createUser = async (
     (firebase_uid, phone, name, email, role)
     VALUES (?, ?, ?, ?, ?)
     `,
-    [firebaseUid, phone, name, email, role],
+    [firebase_uid, phone, name, email, role],
   );
 
   const [users]: any = await db.query(
