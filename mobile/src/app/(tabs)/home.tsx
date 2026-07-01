@@ -2,18 +2,26 @@ import { View, Text, Button } from "react-native";
 import { router } from "expo-router";
 import { getAuth, signOut } from "@react-native-firebase/auth";
 import { RootState } from "@/redux/store";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { clearUser } from "@/features/auth";
 
 export default function HomeScreen() {
   const user = useSelector((state: RootState) => state.auth.user);
 
+  const dispatch = useDispatch();
+
   const logout = async () => {
-    const auth = getAuth();
+    try {
+      const auth = getAuth();
 
-    if (!auth.currentUser) return;
+      await signOut(auth);
 
-    await signOut(auth);
-    router.replace("/login");
+      dispatch(clearUser());
+
+      router.replace("/(auth)/login");
+    } catch (error) {
+      console.log("Logout Error:", error);
+    }
   };
 
   return (
