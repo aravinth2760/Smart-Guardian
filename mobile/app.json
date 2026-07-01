@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Smart Guardian",
+    "slug": "smart-guardian",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "smartguardian",
+    "userInterfaceStyle": "automatic",
+
+    "ios": {
+      "supportsTablet": true
+    },
+
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#faf8fc"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+
+    "web": {
+      "output": "static",
+      "backgroundColor": "#faf8fc"
+    },
+
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#faf8fc",
+          "imageWidth": 120
+        }
+      ]
+    ],
+
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
