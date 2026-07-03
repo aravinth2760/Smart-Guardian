@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "Smart Guardian",
+    "slug": "smart-guardian",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "smartguardian",
+    "userInterfaceStyle": "automatic",
+    "ios": {},
+    "android": {
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "static"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
