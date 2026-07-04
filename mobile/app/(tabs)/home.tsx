@@ -6,6 +6,7 @@ import { logout } from "@/store/slices/authSlice";
 import { useCallback, useState } from "react";
 import HomeHeader from "@/components/home/HomeHeader";
 import HomeSOSCard from "@/components/home/HomeSOSCard";
+import HomeQuickActions from "@/components/home/HomeQuickActions";
 
 export default function HomeScreen() {
   const dispatch = useDispatch();
@@ -26,6 +27,7 @@ export default function HomeScreen() {
       <StatusBar barStyle="default" />
       <HomeHeader contacts={contact} />
       <HomeSOSCard onPress={handleSOSPress} disabled={sendingAlert} />
+      <HomeQuickActions />
     </ScrollView>
   );
 }
