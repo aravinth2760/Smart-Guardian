@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 
 import { logout } from "@/store/slices/authSlice";
 import { useState } from "react";
-import HomeHeader from "@/components/HomeHeader";
+import HomeHeader from "@/components/home/HomeHeader";
 
 export default function HomeScreen() {
   const dispatch = useDispatch();
