@@ -1,18 +1,12 @@
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Text, StyleSheet } from "react-native";
+import { Redirect } from "expo-router";
+import { useSelector } from "react-redux";
+
+import type { RootState } from "@/store";
 
 export default function Index() {
-  return (
-    <SafeAreaView style={styles.container}>
-      <Text>Edit src/app/index.tsx to edit this screen.</Text>
-    </SafeAreaView>
+  const isAuthenticated = useSelector(
+    (state: RootState) => state.auth.isAuthenticated,
   );
-}
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
+  return <Redirect href={isAuthenticated ? "/(tabs)/home" : "/(auth)/login"} />;
+}
