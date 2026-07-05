@@ -1,35 +1,85 @@
 import { Request, Response } from "express";
+import { sendOtp, verifyOtp } from "../services/otp.service.js";
 
-export const sendOtp = async (req: Request, res: Response) => {
-  const { phone } = req.body;
+const phoneRegex = /^[6-9]\d{9}$/;
 
-  res.status(200).json({
-    success: true,
-    message: "OTP sent successfully",
-    data: {
-      phone,
-    },
-  });
+// Send OTP Controller
+export const sendOtpController = async (req: Request, res: Response) => {
+  try {
+    const { phone } = req.body;
+
+    // Validation
+    if (!phone) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone is required",
+      });
+    }
+
+    if (!phoneRegex.test(phone)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid phone number",
+      });
+    }
+
+    // Service call
+    await sendOtp(phone);
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP sent successfully",
+    });
+  } catch (err: any) {
+    return res.status(err.statusCode || 500).json({
+      success: false,
+      message: err.message || "Internal Server Error",
+    });
+  }
 };
 
-export const verifyOtp = async (req: Request, res: Response) => {
-  const { phone, otp } = req.body;
+// Verify OTP Controller
+export const verifyOtpController = async (req: Request, res: Response) => {
+  try {
+    const { phone, otp } = req.body;
 
-  res.status(200).json({
-    success: true,
-    message: "OTP verified successfully",
-    data: {
-      phone,
-      otp,
-      isVerified: true,
-    },
-  });
-};
+    // Validation
+    if (!phone || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone and OTP are required",
+      });
+    }
 
-export const completeProfile = async (req: Request, res: Response) => {
-  res.status(201).json({
-    success: true,
-    message: "Profile completed successfully",
-    data: req.body,
-  });
+    if (!phoneRegex.test(phone)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid phone number",
+      });
+    }
+
+    if (!/^\d{4,6}$/.test(otp)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP format",
+      });
+    }
+
+    // Service call
+    const result = await verifyOtp(phone, otp);
+
+    if (!result || result.success === false) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      });
+    }
+
+    return res.status(200).json(result);
+  } catch (err: any) {
+    return res.status(err.statusCode || 400).json({
+      success: false,
+      message: err.message || "Verification failed",
+    });
+  }
 };
