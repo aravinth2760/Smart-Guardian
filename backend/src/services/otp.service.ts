@@ -1,6 +1,7 @@
 import axios from "axios";
 import { normalizePhone } from "../utils/normalizePhone.js";
 import { generateToken } from "../utils/jwt.js";
+import prisma from "../config/db.js";
 
 const MSG91_OTP_URL = "https://control.msg91.com/api/v5/otp";
 const MSG91_VERIFY_URL = "https://control.msg91.com/api/v5/otp/verify";
@@ -73,12 +74,18 @@ export const verifyOtp = async (phone: string, otp: string) => {
         sub: mobile,
         type: "otp_verified",
       });
+      const user = await prisma.user.findUnique({
+        where: {
+          phone: mobile,
+        },
+      });
 
       return {
         success: true,
         message: data?.message || "OTP verified successfully",
-        mobile,
         token,
+        user,
+        isNewUser: !user,
       };
     }
 
