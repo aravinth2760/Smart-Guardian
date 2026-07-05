@@ -4,6 +4,7 @@ node_modules/
 # Build output
 dist/
 build/
+*.tsbuildinfo
 
 # Logs
 logs/
@@ -22,8 +23,8 @@ pnpm-debug.log*
 prisma/dev.db
 prisma/dev.db-journal
 
-# TypeScript
-*.tsbuildinfo
+# Generated Prisma Client (only if using custom output)
+src/generated/prisma/
 
 # Coverage
 coverage/
@@ -39,4 +40,8 @@ Thumbs.db
 # Temporary files
 .tmp/
 .temp/
-/src/generated/prisma
+.cache/
+
+# Runtime
+*.pid
+*.seed
