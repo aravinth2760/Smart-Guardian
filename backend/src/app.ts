@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import routes from "./routes/index.js";
 
 const app = express();
 
@@ -15,5 +16,6 @@ app.get("/", (_req, res) => {
     message: "Smart Guardian Backend is running 🚀",
   });
 });
+app.use("/api", routes);
 
 export default app;
