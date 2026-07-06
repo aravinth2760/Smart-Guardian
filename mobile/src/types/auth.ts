@@ -1,4 +1,4 @@
-// Relationship
+// Enums
 export type Relationship =
   | "father"
   | "mother"
@@ -9,31 +9,38 @@ export type Relationship =
   | "guardian"
   | "other";
 
-// Family Permission
 export type Permission = "owner" | "manager" | "member";
 
-// User
+// Models
 export interface User {
   id: string;
-  familyId: string;
 
-  name: string;
+  familyId: string | null;
+
+  name: string | null;
   phone: string;
-  email: string;
+  email: string | null;
 
-  relationship: Relationship;
-  permission: Permission;
+  relationship: Relationship | null;
+  role: Permission;
+
+  profileCompleted: boolean;
+
+  createdAt: string;
+  updatedAt: string;
 }
 
-// Redux Auth State
+// Redux
 export interface AuthState {
   user: User | null;
+
   accessToken: string | null;
+  refreshToken: string | null;
 
   isAuthenticated: boolean;
 }
 
-// Request Types
+// Requests
 export interface SendOtpRequest {
   phone: string;
 }
@@ -44,26 +51,33 @@ export interface VerifyOtpRequest {
 }
 
 export interface CompleteProfileRequest {
-  phone: string;
   name: string;
-  email: string;
+  email?: string;
   relationship: Relationship;
 }
 
-// Response Types
+// Responses
+export interface SendOtpResponse {
+  success: boolean;
+  message: string;
+}
+
 export interface VerifyOtpResponse {
   success: boolean;
-  isNewUser: boolean;
+  message: string;
 
-  accessToken?: string;
-  user?: User;
+  data: {
+    accessToken: string;
+    refreshToken: string;
 
-  phone?: string;
+    isNewUser: boolean;
+
+    user: User;
+  };
 }
 
 export interface CompleteProfileResponse {
   success: boolean;
-
-  accessToken: string;
-  user: User;
+  message: string;
+  data: User;
 }
