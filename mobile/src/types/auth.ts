@@ -52,8 +52,9 @@ export interface VerifyOtpRequest {
 }
 
 export interface CompleteProfileRequest {
+  phone: string;
   name: string;
-  email?: string;
+  email: string;
   relationship: Relationship;
 }
 
