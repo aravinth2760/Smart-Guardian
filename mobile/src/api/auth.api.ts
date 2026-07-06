@@ -17,7 +17,6 @@ export const verifyOtp = async (
   data: VerifyOtpRequest,
 ): Promise<VerifyOtpResponse> => {
   const response = await api.post("/auth/verify-otp", data);
-  console.log("Verify OTP Response:", response.data); // Log the response data to see what is being returned
   return response.data;
 };
 
