@@ -2,8 +2,6 @@ import { Request, Response } from "express";
 import { sendOtp, verifyOtp } from "../services/otp.service.js";
 import { completeProfile } from "../services/auth.service.js";
 
-const phoneRegex = /^[6-9]\d{9}$/;
-
 // Send OTP Controller
 export const sendOtpController = async (req: Request, res: Response) => {
   try {
@@ -14,13 +12,6 @@ export const sendOtpController = async (req: Request, res: Response) => {
       return res.status(400).json({
         success: false,
         message: "Phone is required",
-      });
-    }
-
-    if (!phoneRegex.test(phone)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid phone number",
       });
     }
 

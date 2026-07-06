@@ -1,6 +1,8 @@
 import { z } from "zod";
 
-const phoneSchema = z.string().regex(/^[0-9]{10,15}$/, "Invalid phone number");
+const phoneSchema = z
+  .string()
+  .regex(/^\+[1-9]\d{9,14}$/, "Invalid phone number");
 
 const otpSchema = z.string().regex(/^[0-9]{4,6}$/, "Invalid OTP");
 
