@@ -1,14 +1,13 @@
-import dotenv from "dotenv";
-import app from "./app.js";
-import { connectDB } from "./prisma/client.js";
+import "dotenv/config";
 
-dotenv.config();
+import app from "./app.js";
+import { connectDb } from "./prisma/client.js";
 
 const PORT = Number(process.env.PORT) || 3000;
 
 const startServer = async () => {
   try {
-    await connectDB();
+    await connectDb();
 
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);

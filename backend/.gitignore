@@ -45,3 +45,4 @@ Thumbs.db
 # Runtime
 *.pid
 *.seed
+/src/generated/prisma
