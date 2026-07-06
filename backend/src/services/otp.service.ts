@@ -1,25 +1,24 @@
 import axios from "axios";
-import { normalizePhone } from "../utils/normalizePhone.js";
-import { generateToken } from "../utils/jwt.js";
+import crypto from "crypto";
 import { prisma } from "../prisma/client.js";
+
+import { normalizePhone } from "../utils/normalizePhone.js";
+import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 
 const MSG91_OTP_URL = "https://control.msg91.com/api/v5/otp";
 const MSG91_VERIFY_URL = "https://control.msg91.com/api/v5/otp/verify";
 
-const MSG91_AUTH_KEY = process.env.MSG91_AUTH_KEY as string;
+const MSG91_AUTH_KEY = process.env.MSG91_AUTH_KEY!;
 const MSG91_TEMPLATE_ID = process.env.MSG91_TEMPLATE_ID as string;
 const OTP_EXPIRY = Number(process.env.OTP_EXPIRY || 60);
+const REFRESH_TOKEN_DAYS = Number(process.env.JWT_REFRESH_EXPIRES_DAYS || 30);
 
-if (!MSG91_AUTH_KEY || !MSG91_TEMPLATE_ID) {
-  throw new Error("MSG91 env variables missing");
-}
-
-// SEND OTP
+// Send OTP Service
 export const sendOtp = async (phone: string) => {
   const mobile = normalizePhone(phone);
 
   try {
-    const res = await axios.post(
+    const response = await axios.post(
       MSG91_OTP_URL,
       {
         template_id: MSG91_TEMPLATE_ID,
@@ -36,22 +35,21 @@ export const sendOtp = async (phone: string) => {
     );
 
     return {
-      success: true,
-      message: res.data?.message || "OTP sent successfully",
+      message: response.data?.message || "OTP sent successfully",
     };
-  } catch (err: any) {
-    console.error("sendOtp error:", err?.response?.data || err.message);
+  } catch (error: any) {
+    console.error("sendOtp error:", error?.response?.data || error.message);
 
-    throw new Error(err?.response?.data?.message || "OTP send failed");
+    throw new Error(error?.response?.data?.message || "Failed to send OTP");
   }
 };
 
-// VERIFY OTP + GENERATE JWT
+// Verify OTP Service
 export const verifyOtp = async (phone: string, otp: string) => {
   const mobile = normalizePhone(phone);
 
   try {
-    const res = await axios.post(
+    const response = await axios.post(
       MSG91_VERIFY_URL,
       {
         mobile,
@@ -66,33 +64,80 @@ export const verifyOtp = async (phone: string, otp: string) => {
       },
     );
 
-    const data = res.data;
+    const data = response.data;
 
-    // MSG91 success check
-    if (data?.type === "success") {
-      const token = generateToken({
-        sub: mobile,
-        type: "otp_verified",
-      });
-      const user = await prisma.user.findUnique({
-        where: {
+    if (data?.type !== "success") {
+      throw new Error(data?.message || "OTP verification failed");
+    }
+
+    let user = await prisma.user.findUnique({
+      where: {
+        phone: mobile,
+      },
+    });
+
+    const isNewUser = !user;
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
           phone: mobile,
         },
       });
-
-      return {
-        success: true,
-        message: data?.message || "OTP verified successfully",
-        token,
-        user,
-        isNewUser: !user,
-      };
     }
 
-    throw new Error(data?.message || "OTP verification failed");
-  } catch (err: any) {
-    console.error("verifyOtp error:", err?.response?.data || err.message);
+    const accessToken = generateAccessToken({
+      userId: user.id,
+    });
 
-    throw new Error(err?.response?.data?.message || "Invalid or expired OTP");
+    const refreshToken = generateRefreshToken({
+      userId: user.id,
+    });
+
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(refreshToken)
+      .digest("hex");
+
+    const expiresAt = new Date(
+      Date.now() + REFRESH_TOKEN_DAYS * 24 * 60 * 60 * 1000,
+    );
+
+    await prisma.$transaction(async (tx) => {
+      // Single-device login
+      await tx.refreshToken.deleteMany({
+        where: {
+          userId: user.id,
+        },
+      });
+
+      await tx.refreshToken.create({
+        data: {
+          tokenHash,
+          userId: user.id,
+          expiresAt,
+        },
+      });
+    });
+
+    return {
+      message: "OTP verified successfully",
+      accessToken,
+      refreshToken,
+      isNewUser,
+      user: {
+        id: user.id,
+        phone: user.phone,
+        name: user.name,
+        email: user.email,
+        relationship: user.relationship,
+        role: user.role,
+        profileCompleted: user.profileCompleted,
+      },
+    };
+  } catch (error: any) {
+    console.error("verifyOtp error:", error?.response?.data || error.message);
+
+    throw new Error(error?.response?.data?.message || "Invalid or expired OTP");
   }
 };
