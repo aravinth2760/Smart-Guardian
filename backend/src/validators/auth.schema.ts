@@ -16,18 +16,16 @@ export const verifyOtpSchema = z.object({
 });
 
 export const completeProfileSchema = z.object({
-  body: z.object({
-    name: z.string().min(2),
-    email: z.string().email().optional(),
-    relationship: z.enum([
-      "father",
-      "mother",
-      "son",
-      "daughter",
-      "grandfather",
-      "grandmother",
-      "guardian",
-      "other",
-    ]),
-  }),
+  name: z.string().min(2),
+  email: z.string().email().optional(),
+  relationship: z.enum([
+    "father",
+    "mother",
+    "son",
+    "daughter",
+    "grandfather",
+    "grandmother",
+    "guardian",
+    "other",
+  ]),
 });
