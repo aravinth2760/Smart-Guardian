@@ -38,6 +38,7 @@ export interface AuthState {
   refreshToken: string | null;
 
   isAuthenticated: boolean;
+  isNewUser: boolean;
 }
 
 // Requests

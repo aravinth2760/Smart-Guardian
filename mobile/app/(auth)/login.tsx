@@ -45,11 +45,17 @@ export default function LoginScreen() {
 
     try {
       // Existing User
-      if (!response.isNewUser && response.user && response.accessToken) {
+      if (
+        !response.data.isNewUser &&
+        response.data.user &&
+        response.data.accessToken
+      ) {
         dispatch(
           login({
-            user: response.user,
-            accessToken: response.accessToken,
+            user: response.data.user,
+            accessToken: response.data.accessToken,
+            refreshToken: response.data.refreshToken,
+            isNewUser: response.data.isNewUser,
           }),
         );
 
@@ -61,7 +67,7 @@ export default function LoginScreen() {
       router.replace({
         pathname: "/complete-profile",
         params: {
-          phone: response.phone ?? `+91${phone}`,
+          phone: response.data.user.phone ?? `+91${phone}`,
         },
       });
     } catch (err) {
