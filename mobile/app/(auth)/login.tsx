@@ -48,7 +48,8 @@ export default function LoginScreen() {
       if (
         !response.data.isNewUser &&
         response.data.user &&
-        response.data.accessToken
+        response.data.accessToken &&
+        response.data.user.profileCompleted
       ) {
         dispatch(
           login({
