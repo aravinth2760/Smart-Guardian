@@ -10,7 +10,7 @@ import AppTextInput from "@/components/common/AppTextInput";
 import AppSelect from "@/components/common/AppSelect";
 
 import { completeProfile } from "@/api/auth.api";
-import { login } from "@/store/slices/authSlice";
+import { setUser } from "@/store/slices/authSlice";
 import { validateProfile } from "@/utils/validation";
 
 import type { Relationship } from "@/types/auth";
@@ -72,12 +72,7 @@ export default function CompleteProfileScreen() {
         relationship,
       });
 
-      dispatch(
-        login({
-          user: response.user,
-          accessToken: response.accessToken,
-        }),
-      );
+      dispatch(setUser(response.data));
 
       router.replace("/home");
     } catch (err) {
