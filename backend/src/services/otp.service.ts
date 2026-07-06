@@ -13,9 +13,17 @@ const MSG91_TEMPLATE_ID = process.env.MSG91_TEMPLATE_ID as string;
 const OTP_EXPIRY = Number(process.env.OTP_EXPIRY || 60);
 const REFRESH_TOKEN_DAYS = Number(process.env.JWT_REFRESH_EXPIRES_DAYS || 30);
 
+// Developement purpose delay to simulate network latency and avoid rate limiting issues with MSG91 API
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 // Send OTP Service
 export const sendOtp = async (phone: string) => {
   const mobile = normalizePhone(phone);
+
+  await delay(3000); // Simulate network latency
+  return {
+    message: "OTP sent successfully (simulated)",
+  };
 
   try {
     const response = await axios.post(
@@ -49,6 +57,7 @@ export const verifyOtp = async (phone: string, otp: string) => {
   const mobile = normalizePhone(phone);
 
   try {
+    /*
     const response = await axios.post(
       MSG91_VERIFY_URL,
       {
@@ -69,6 +78,9 @@ export const verifyOtp = async (phone: string, otp: string) => {
     if (data?.type !== "success") {
       throw new Error(data?.message || "OTP verification failed");
     }
+    */
+
+    await delay(3000); // Simulate network latency
 
     let user = await prisma.user.findUnique({
       where: {
