@@ -1,9 +1,79 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model Family {
+  id          String   @id @default(cuid())
+
+  name        String
+  familyCode  String   @unique
+
+  users       User[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum Relationship {
+  father
+  mother
+  son
+  daughter
+  grandfather
+  grandmother
+  guardian
+  other
+}
+
+enum Permission {
+  owner
+  manager
+  member
+}
+
+model User {
+  id                String   @id @default(cuid())
+
+  phone             String   @unique
+
+  name              String?
+  email             String?  @unique
+
+  relationship      Relationship?
+  role              Permission @default(member)
+
+  profileCompleted  Boolean @default(false)
+
+  familyId          String?
+  family            Family? @relation(fields: [familyId], references: [id])
+
+  refreshTokens     RefreshToken[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([familyId])
+}
+
+model RefreshToken {
+  id          String   @id @default(cuid())
+
+  tokenHash   String   @unique
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt   DateTime
+  revokedAt   DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([expiresAt])
 }
