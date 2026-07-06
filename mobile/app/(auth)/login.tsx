@@ -39,32 +39,25 @@ export default function LoginScreen() {
   } = usePhoneAuth();
 
   const handleVerifyOTP = async () => {
-    const response = await verifyOTP();
-
-    if (!response) return;
-
     try {
-      // Existing User
-      if (
-        !response.data.isNewUser &&
-        response.data.user &&
-        response.data.accessToken &&
-        response.data.user.profileCompleted
-      ) {
-        dispatch(
-          login({
-            user: response.data.user,
-            accessToken: response.data.accessToken,
-            refreshToken: response.data.refreshToken,
-            isNewUser: response.data.isNewUser,
-          }),
-        );
+      const response = await verifyOTP();
 
+      if (!response) return;
+
+      dispatch(
+        login({
+          user: response.data.user,
+          accessToken: response.data.accessToken,
+          refreshToken: response.data.refreshToken,
+          isNewUser: response.data.isNewUser,
+        }),
+      );
+
+      if (!response.data.isNewUser && response.data.user.profileCompleted) {
         router.replace("/home");
         return;
       }
 
-      // New User
       router.replace({
         pathname: "/complete-profile",
         params: {
@@ -72,7 +65,7 @@ export default function LoginScreen() {
         },
       });
     } catch (err) {
-      console.error("Login Error:", err);
+      console.error("Verify OTP Error:", err);
     }
   };
 
