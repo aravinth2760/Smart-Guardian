@@ -1,11 +1,12 @@
 import colors from "@/constants/colors";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SafetyScreen() {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.sectionTitle}>Safety Screen</Text>
-    </View>
+    </SafeAreaView>
   );
 }
 
