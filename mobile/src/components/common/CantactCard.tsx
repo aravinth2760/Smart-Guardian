@@ -1,77 +1,54 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { Phone, Trash2 } from "lucide-react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { Phone, UserRound } from "lucide-react-native";
 
-import Colors from "@/constants/colors";
+import colors from "@/constants/colors";
 
 interface ContactCardProps {
   name: string;
   phone: string;
-  relationship: string;
-  onDelete: () => void;
+  status?: string;
 }
-
-const RELATIONSHIP_COLORS: Record<string, string> = {
-  Parent: Colors.light.primary,
-  Guardian: "#8B5CF6",
-  Sibling: "#3B82F6",
-  Relative: "#F59E0B",
-  Teacher: "#22C55E",
-  Friend: "#06B6D4",
-  Neighbor: "#EC4899",
-  Other: Colors.light.textSecondary,
-};
 
 export default function ContactCard({
   name,
   phone,
-  relationship,
-  onDelete,
+  status = "Active",
 }: ContactCardProps) {
-  const accentColor = RELATIONSHIP_COLORS[relationship] ?? Colors.light.primary;
+  const isActive = status.toLowerCase() === "active";
 
   return (
     <View style={styles.card}>
-      {/* Content */}
+      <View style={styles.avatar}>
+        <UserRound size={22} color={colors.light.primary} />
+      </View>
+
       <View style={styles.content}>
-        {/* Name + Relationship */}
-        <View style={styles.nameRow}>
+        <View style={styles.header}>
           <Text numberOfLines={1} style={styles.name}>
             {name}
           </Text>
 
-          <View
-            style={[
-              styles.relationshipBadgeInline,
-              { backgroundColor: `${accentColor}18` },
-            ]}
-          >
-            <Text
-              style={[styles.relationshipTextInline, { color: accentColor }]}
-            >
-              {relationship}
-            </Text>
+          <View style={styles.statusContainer}>
+            <View
+              style={[
+                styles.statusDot,
+                {
+                  backgroundColor: isActive
+                    ? colors.light.success
+                    : colors.light.textSecondary,
+                },
+              ]}
+            />
+
+            <Text style={styles.statusText}>{status}</Text>
           </View>
         </View>
 
-        {/* Phone */}
         <View style={styles.phoneRow}>
-          <Phone size={13} color={Colors.light.textSecondary} />
+          <Phone size={14} color={colors.light.textSecondary} />
           <Text style={styles.phone}>{phone}</Text>
         </View>
       </View>
-
-      {/* Delete */}
-      <Pressable
-        onPress={onDelete}
-        accessibilityRole="button"
-        accessibilityLabel={`Remove ${name}`}
-        style={({ pressed }) => [
-          styles.deleteButton,
-          pressed && styles.deletePressed,
-        ]}
-      >
-        <Trash2 size={18} color={Colors.light.emergency} strokeWidth={2.2} />
-      </Pressable>
     </View>
   );
 }
@@ -80,60 +57,69 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    marginBottom: 10,
+  },
+
+  avatar: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: "#EEF2FF",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   content: {
     flex: 1,
+    marginLeft: 14,
   },
 
-  nameRow: {
+  header: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    justifyContent: "flex-start",
   },
 
   name: {
+    flex: 1,
     fontSize: 16,
     fontWeight: "700",
-    color: Colors.light.text,
-    marginRight: 8,
+    color: colors.light.text,
+    marginRight: 10,
   },
 
-  relationshipBadgeInline: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 999,
+  statusContainer: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 
-  relationshipTextInline: {
-    fontSize: 9,
+  statusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    marginRight: 5,
+  },
+
+  statusText: {
+    fontSize: 11,
+    color: colors.light.textSecondary,
     fontWeight: "600",
   },
 
   phoneRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 5,
+    marginTop: 6,
   },
 
   phone: {
     marginLeft: 6,
     fontSize: 13,
-    color: Colors.light.textSecondary,
-  },
-
-  deleteButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#FEF2F2",
-  },
-
-  deletePressed: {
-    opacity: 0.7,
-    backgroundColor: "#FEE2E2",
+    color: colors.light.textSecondary,
+    fontWeight: "500",
   },
 });
