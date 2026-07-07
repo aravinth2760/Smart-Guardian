@@ -6,6 +6,7 @@ import type { RootState } from "@/store";
 
 import HomeHeader from "@/components/home/HomeHeader";
 import GuardiansList from "@/components/home/HomeGuardians";
+import HomeChat from "@/components/home/HomeChat";
 
 export default function HomeScreen() {
   const [sendingAlert, setSendingAlert] = useState(false);
@@ -43,6 +44,7 @@ export default function HomeScreen() {
         onSOSPress={handleSOSPress}
         sendingAlert={sendingAlert}
       />
+      <HomeChat />
       <GuardiansList
         contacts={contacts}
         removeContact={removeContact}
