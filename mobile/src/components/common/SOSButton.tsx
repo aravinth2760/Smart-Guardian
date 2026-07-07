@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from "react-native";
 
 import colors from "@/constants/colors";
@@ -15,9 +16,7 @@ interface SOSButtonProps {
   disabled?: boolean;
 }
 
-const BUTTON_SIZE = 100;
-const CONTAINER_SIZE = BUTTON_SIZE + 50;
-const PULSE_SCALE = 1.8;
+const PULSE_SCALE = 1.6;
 const PULSE_DURATION = 1400;
 const PULSE_DELAY = 700;
 
@@ -25,6 +24,11 @@ export default function SOSButton({
   onPress,
   disabled = false,
 }: SOSButtonProps) {
+  const { width } = useWindowDimensions();
+
+  const BUTTON_SIZE = Math.max(72, Math.min(width * 0.22, 96));
+  const CONTAINER_SIZE = BUTTON_SIZE + 34;
+
   const primaryPulse = useRef(new Animated.Value(1)).current;
   const secondaryPulse = useRef(new Animated.Value(1)).current;
   const buttonScale = useRef(new Animated.Value(1)).current;
@@ -64,11 +68,11 @@ export default function SOSButton({
       primaryAnimation.stop();
       secondaryAnimation.stop();
     };
-  }, [primaryPulse, secondaryPulse]);
+  }, []);
 
   const handlePressIn = () => {
     Animated.spring(buttonScale, {
-      toValue: 0.88,
+      toValue: 0.9,
       useNativeDriver: true,
     }).start();
   };
@@ -76,7 +80,7 @@ export default function SOSButton({
   const handlePressOut = () => {
     Animated.spring(buttonScale, {
       toValue: 1,
-      friction: 3,
+      friction: 4,
       useNativeDriver: true,
     }).start();
   };
@@ -90,6 +94,9 @@ export default function SOSButton({
       style={[
         styles.pulse,
         {
+          width: BUTTON_SIZE,
+          height: BUTTON_SIZE,
+          borderRadius: BUTTON_SIZE / 2,
           opacity: animatedValue.interpolate({
             inputRange: [1, PULSE_SCALE],
             outputRange: [initialOpacity, 0],
@@ -101,9 +108,17 @@ export default function SOSButton({
   );
 
   return (
-    <View style={styles.container}>
-      {renderPulse(primaryPulse, 0.4)}
-      {renderPulse(secondaryPulse, 0.25)}
+    <View
+      style={[
+        styles.container,
+        {
+          width: CONTAINER_SIZE,
+          height: CONTAINER_SIZE,
+        },
+      ]}
+    >
+      {renderPulse(primaryPulse, 0.35)}
+      {renderPulse(secondaryPulse, 0.2)}
 
       <Animated.View
         style={{
@@ -119,10 +134,25 @@ export default function SOSButton({
           onPressOut={handlePressOut}
           style={({ pressed }) => [
             styles.button,
+            {
+              width: BUTTON_SIZE,
+              height: BUTTON_SIZE,
+              borderRadius: BUTTON_SIZE / 2,
+            },
             pressed && styles.buttonPressed,
           ]}
         >
-          <Text style={styles.label}>SOS</Text>
+          <Text
+            style={[
+              styles.label,
+              {
+                fontSize: BUTTON_SIZE * 0.3,
+                letterSpacing: BUTTON_SIZE * 0.02,
+              },
+            ]}
+          >
+            SOS
+          </Text>
         </Pressable>
       </Animated.View>
     </View>
@@ -131,24 +161,16 @@ export default function SOSButton({
 
 const styles = StyleSheet.create({
   container: {
-    width: CONTAINER_SIZE,
-    height: CONTAINER_SIZE,
     alignItems: "center",
     justifyContent: "center",
   },
 
   pulse: {
     position: "absolute",
-    width: BUTTON_SIZE,
-    height: BUTTON_SIZE,
-    borderRadius: BUTTON_SIZE / 2,
     backgroundColor: colors.light.emergency,
   },
 
   button: {
-    width: BUTTON_SIZE,
-    height: BUTTON_SIZE,
-    borderRadius: BUTTON_SIZE / 2,
     alignItems: "center",
     justifyContent: "center",
 
@@ -159,26 +181,24 @@ const styles = StyleSheet.create({
     shadowColor: colors.light.emergency,
     shadowOffset: {
       width: 0,
-      height: 6,
+      height: 4,
     },
-    shadowOpacity: 0.45,
-    shadowRadius: 20,
-    elevation: 12,
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 8,
   },
 
   buttonPressed: {
     backgroundColor: colors.light.emergencyDark,
     borderColor: colors.light.emergency,
 
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 6,
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
 
   label: {
-    fontSize: 30,
     fontWeight: "900",
     color: "#FFFFFF",
-    letterSpacing: 4,
   },
 });
