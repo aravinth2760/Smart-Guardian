@@ -6,7 +6,9 @@
     "orientation": "default",
     "scheme": "smartguardian",
     "userInterfaceStyle": "automatic",
-    "ios": {},
+    "ios": {
+      "bundleIdentifier": "com.aravinth-user.smart-guardian"
+    },
     "android": {
       "predictiveBackGestureEnabled": false
     },
