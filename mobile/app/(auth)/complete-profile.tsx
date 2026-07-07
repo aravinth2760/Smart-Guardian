@@ -12,6 +12,7 @@ import AppSelect from "@/components/common/AppSelect";
 import { completeProfile } from "@/api/auth.api";
 import { setUser } from "@/store/slices/authSlice";
 import { validateProfile } from "@/utils/validation";
+import { tokenService } from "@/services/token.service";
 
 import type { Relationship } from "@/types/auth";
 import AppButton from "@/components/common/AppButton";
@@ -71,6 +72,8 @@ export default function CompleteProfileScreen() {
         email: email.trim().toLowerCase(),
         relationship,
       });
+
+      await tokenService.saveUser(response.data);
 
       dispatch(setUser(response.data));
 
