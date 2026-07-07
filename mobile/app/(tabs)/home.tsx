@@ -1,5 +1,4 @@
 import { Alert, ScrollView, StatusBar } from "react-native";
-import { router } from "expo-router";
 import { useCallback, useState } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
@@ -31,11 +30,6 @@ export default function HomeScreen() {
     },
   ];
 
-  const removeContact = (id: string) => {
-    console.log("Remove contact:", id);
-    // later: setState / API delete
-  };
-
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
       <StatusBar barStyle="default" />
@@ -45,11 +39,7 @@ export default function HomeScreen() {
         sendingAlert={sendingAlert}
       />
       <HomeChat />
-      <GuardiansList
-        contacts={contacts}
-        removeContact={removeContact}
-        router={router}
-      />
+      <GuardiansList contacts={contacts} />
     </ScrollView>
   );
 }
