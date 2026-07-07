@@ -5,7 +5,6 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 
 import HomeHeader from "@/components/home/HomeHeader";
-import HomeQuickActions from "@/components/home/HomeQuickActions";
 import GuardiansList from "@/components/home/HomeGuardians";
 
 export default function HomeScreen() {
@@ -44,7 +43,6 @@ export default function HomeScreen() {
         onSOSPress={handleSOSPress}
         sendingAlert={sendingAlert}
       />
-      <HomeQuickActions />
       <GuardiansList
         contacts={contacts}
         removeContact={removeContact}
