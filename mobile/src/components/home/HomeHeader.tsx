@@ -1,98 +1,136 @@
-import { View, Text, StyleSheet } from "react-native";
-import React from "react";
 import {
-  Users,
-  MapPin,
-  Activity,
-  LucideIcon,
-  Shield,
-} from "lucide-react-native";
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  useWindowDimensions,
+} from "react-native";
+import { Shield, Bell } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { StatusBar } from "react-native";
 
+import SOSButton from "@/components/common/SOSButton";
 import colors from "@/constants/colors";
-import useLocationCheck from "@/hooks/useLocationCheck";
 
 type HomeHeaderProps = {
-  contacts: number;
   userName?: string;
+  onSOSPress: () => void;
+  sendingAlert?: boolean;
 };
 
 export default function HomeHeader({
-  contacts,
   userName = "Aravinth",
+  onSOSPress,
+  sendingAlert = false,
 }: HomeHeaderProps) {
-  const { locationEnabled } = useLocationCheck();
+  const clamp = (min: number, preferred: number, max: number) =>
+    Math.max(min, Math.min(preferred, max));
 
-  const stats: {
-    Icon: LucideIcon;
-    value: string | number;
-    label: string;
-  }[] = [
-    {
-      Icon: Users,
-      value: contacts,
-      label: "Guardians",
-    },
-    {
-      Icon: MapPin,
-      value: locationEnabled ? "Live" : "Off",
-      label: "Location",
-    },
-    {
-      Icon: Activity,
-      value: "Safe",
-      label: "Status",
-    },
-  ];
+  const { width } = useWindowDimensions();
+
+  const appNameSize = clamp(18, width * 0.085, 22);
+  const welcomeSize = clamp(16, width * 0.11, 18);
+  const subtitleSize = clamp(12, width * 0.043, 14);
+  const sosTitleSize = clamp(14, width * 0.06, 16);
+  const sosDescSize = clamp(10, width * 0.04, 12);
 
   return (
-    <LinearGradient
-      colors={[colors.light.gradientStart, colors.light.gradientEnd]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.headerGradient}
-    >
-      <View style={styles.headerContent}>
-        {/* TOP */}
-        <View style={styles.headerTop}>
-          <View style={styles.logoRow}>
-            <Shield size={26} color="#fff" strokeWidth={2.5} />
-            <Text style={styles.appName}>Smart Guardian</Text>
-          </View>
-        </View>
-
-        {/* WELCOME */}
-        <Text style={styles.welcomeText}>Welcome back, {userName} 👋</Text>
-
-        <Text style={styles.headerSubtitle}>
-          Protecting you and your loved ones, whenever help is needed.
-        </Text>
-      </View>
-
-      {/* STATS */}
-      <View style={styles.statsRow}>
-        {stats.map(({ Icon, value, label }, index) => (
-          <React.Fragment key={label}>
-            <View style={styles.statCard}>
-              <Icon size={20} strokeWidth={2.2} color={colors.light.primary} />
-              <Text style={styles.statValue}>{value}</Text>
-              <Text style={styles.statLabel}>{label}</Text>
+    <View>
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="transparent"
+        translucent
+      />
+      <LinearGradient
+        colors={[colors.light.gradientStart, colors.light.gradientEnd]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.headerGradient}
+      >
+        <View style={styles.headerContent}>
+          {/* Header */}
+          <View style={styles.headerTop}>
+            <View style={styles.logoRow}>
+              <Shield size={22} color="#fff" strokeWidth={2.5} />
+              <Text style={[styles.appName, { fontSize: appNameSize }]}>
+                Guardian
+              </Text>
             </View>
 
-            {index !== stats.length - 1 && <View style={styles.statDivider} />}
-          </React.Fragment>
-        ))}
+            <TouchableOpacity style={styles.iconButton}>
+              <Bell size={22} color="#fff" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Welcome */}
+          <Text
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.8}
+            style={[styles.welcomeText, { fontSize: welcomeSize }]}
+          >
+            Welcome back, {userName} 👋
+          </Text>
+
+          <Text
+            style={[
+              styles.headerSubtitle,
+              {
+                fontSize: subtitleSize,
+                lineHeight: subtitleSize * 1.5,
+              },
+            ]}
+          >
+            Keeping your family connected and protected.
+          </Text>
+        </View>
+      </LinearGradient>
+
+      {/* Floating SOS Card */}
+      <View style={styles.sosWrapper}>
+        <View style={styles.sosCard}>
+          <View style={styles.sosContent}>
+            <View style={styles.sosHeader}>
+              <View style={styles.indicator} />
+              <Text
+                style={[
+                  styles.sosTitle,
+                  {
+                    fontSize: sosTitleSize,
+                  },
+                ]}
+                numberOfLines={2}
+              >
+                Emergency SOS
+              </Text>
+            </View>
+
+            <Text
+              style={[
+                styles.sosDescription,
+                {
+                  fontSize: sosDescSize,
+                  lineHeight: sosDescSize * 1.5,
+                },
+              ]}
+            >
+              Tap the SOS button to instantly notify all your guardians.
+            </Text>
+          </View>
+
+          <SOSButton onPress={onSOSPress} disabled={sendingAlert} />
+        </View>
       </View>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   headerGradient: {
-    paddingTop: 54,
-    paddingBottom: 22,
-    borderBottomLeftRadius: 34,
-    borderBottomRightRadius: 34,
+    paddingTop: 72,
+    paddingBottom: 90,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
   },
 
   headerContent: {
@@ -103,7 +141,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 14,
+    marginBottom: 24,
   },
 
   logoRow: {
@@ -113,61 +151,79 @@ const styles = StyleSheet.create({
   },
 
   appName: {
-    fontSize: 26,
     fontWeight: "800",
     color: "#fff",
-    letterSpacing: 0.3,
+  },
+
+  iconButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.18)",
   },
 
   welcomeText: {
-    fontSize: 20,
     fontWeight: "800",
     color: "#fff",
-    marginBottom: 6,
+    marginBottom: 10,
   },
 
   headerSubtitle: {
-    width: "92%",
-    fontSize: 14,
-    color: "rgba(255,255,255,0.85)",
-    lineHeight: 22,
+    color: "rgba(255,255,255,0.92)",
+    width: "88%",
+    fontWeight: "500",
   },
 
-  statsRow: {
-    flexDirection: "row",
-    marginTop: 22,
-    marginHorizontal: 24,
+  sosWrapper: {
+    marginTop: -70,
+    paddingHorizontal: 24,
+  },
+
+  sosCard: {
     backgroundColor: "#fff",
-    borderRadius: 24,
-    paddingVertical: 16,
-    paddingHorizontal: 10,
+    borderRadius: 28,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    alignItems: "center",
     shadowColor: "#000",
     shadowOpacity: 0.12,
-    shadowRadius: 14,
-    elevation: 8,
+    shadowRadius: 18,
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    elevation: 10,
   },
 
-  statCard: {
+  sosContent: {
     flex: 1,
+    paddingRight: 16,
+  },
+
+  sosHeader: {
+    flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    marginBottom: 10,
   },
 
-  statDivider: {
-    width: 1,
-    height: 58,
-    alignSelf: "center",
-    backgroundColor: "#E5E7EB",
+  indicator: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#EF4444",
+    marginRight: 8,
   },
 
-  statValue: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: colors.light.text,
+  sosTitle: {
+    fontWeight: "800",
+    color: "#DC2626",
+    flexShrink: 1,
   },
 
-  statLabel: {
-    fontSize: 11,
+  sosDescription: {
     color: colors.light.textSecondary,
   },
 });
