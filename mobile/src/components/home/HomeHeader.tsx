@@ -114,7 +114,7 @@ export default function HomeHeader({
                 },
               ]}
             >
-              Tap the SOS button to instantly notify all your guardians.
+              Emergency SOS Need help? Alert your guardians instantly.
             </Text>
           </View>
 
