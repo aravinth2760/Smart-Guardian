@@ -16,6 +16,8 @@ import usePhoneAuth from "@/hooks/usePhoneAuth";
 
 import { login } from "@/store/slices/authSlice";
 
+import { tokenService } from "@/services/token.service";
+
 export default function LoginScreen() {
   const dispatch = useDispatch();
 
@@ -44,16 +46,24 @@ export default function LoginScreen() {
 
       if (!response) return;
 
+      const { user, accessToken, refreshToken, isNewUser } = response.data;
+
+      // Save tokens and user in SecureStore
+      await tokenService.saveTokens(accessToken, refreshToken);
+      await tokenService.saveUser(user);
+
+      // Save auth state in Redux
       dispatch(
         login({
-          user: response.data.user,
-          accessToken: response.data.accessToken,
-          refreshToken: response.data.refreshToken,
-          isNewUser: response.data.isNewUser,
+          user,
+          accessToken,
+          refreshToken,
+          isNewUser,
         }),
       );
 
-      if (!response.data.isNewUser && response.data.user.profileCompleted) {
+      // Navigate
+      if (!isNewUser && user.profileCompleted) {
         router.replace("/home");
         return;
       }
@@ -61,7 +71,7 @@ export default function LoginScreen() {
       router.replace({
         pathname: "/complete-profile",
         params: {
-          phone: response.data.user.phone ?? `+91${phone}`,
+          phone: user.phone ?? `+91${phone}`,
         },
       });
     } catch (err) {
