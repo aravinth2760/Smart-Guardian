@@ -1,51 +1,29 @@
 import { View, Text, StyleSheet } from "react-native";
-import { Phone } from "lucide-react-native";
+import { ShieldCheck } from "lucide-react-native";
 
 import ContactCard from "@/components/common/CantactCard";
 import Colors from "@/constants/colors";
 
-interface GuardiansListProps {
+interface HomeGuardianProps {
   contacts: any[];
-  removeContact: (id: string) => void;
-  router: any;
 }
 
-export default function GuardiansList({
-  contacts,
-  removeContact,
-  router,
-}: GuardiansListProps) {
+export default function HomeGuardian({ contacts }: HomeGuardianProps) {
   return (
     <View style={styles.section}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Your Guardians</Text>
-
-        <Text
-          style={styles.addButton}
-          onPress={() => router.push("/add-contact")}
-        >
-          Add New
-        </Text>
-      </View>
+      <Text style={styles.title}>Your Guardians</Text>
 
       {contacts.length === 0 ? (
         <View style={styles.emptyCard}>
-          <View style={styles.emptyIcon}>
-            <Phone size={28} color={Colors.light.primary} />
+          <View style={styles.iconContainer}>
+            <ShieldCheck size={26} color={Colors.light.success} />
           </View>
 
-          <Text style={styles.emptyTitle}>No guardians yet</Text>
+          <Text style={styles.emptyTitle}>No guardians available</Text>
 
           <Text style={styles.emptyDescription}>
-            Add family members or trusted contacts who will receive your
-            emergency SOS alerts.
-          </Text>
-
-          <Text
-            style={styles.emptyAction}
-            onPress={() => router.push("/add-contact")}
-          >
-            Add your first guardian
+            Your trusted guardians will appear here once they have been added to
+            your account.
           </Text>
         </View>
       ) : (
@@ -55,8 +33,6 @@ export default function GuardiansList({
               key={contact.id}
               name={contact.name}
               phone={contact.phone}
-              relationship={contact.relationship}
-              onDelete={() => removeContact(contact.id)}
             />
           ))}
         </View>
@@ -69,58 +45,44 @@ const styles = StyleSheet.create({
   section: {
     paddingHorizontal: 24,
     marginTop: 28,
-    marginBottom: 16,
-  },
-
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 16,
+    marginBottom: 20,
   },
 
   title: {
     fontSize: 18,
     fontWeight: "700",
     color: Colors.light.text,
-  },
-
-  addButton: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: Colors.light.primary,
+    marginBottom: 16,
   },
 
   list: {
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#FFFFFF",
     borderRadius: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    overflow: "hidden",
   },
 
   emptyCard: {
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#F8FAFC",
     borderRadius: 20,
-    borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: Colors.light.cardBorder,
-    paddingVertical: 36,
+    paddingVertical: 32,
     paddingHorizontal: 24,
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
   },
 
-  emptyIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: Colors.light.primaryLight,
+  iconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "#ECFDF5",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
   },
 
   emptyTitle: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: "700",
     color: Colors.light.text,
     marginBottom: 8,
@@ -128,15 +90,8 @@ const styles = StyleSheet.create({
 
   emptyDescription: {
     fontSize: 14,
-    lineHeight: 22,
     color: Colors.light.textSecondary,
+    lineHeight: 22,
     textAlign: "center",
-    marginBottom: 18,
-  },
-
-  emptyAction: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: Colors.light.primary,
   },
 });
