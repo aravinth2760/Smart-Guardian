@@ -114,7 +114,7 @@ export default function HomeHeader({
                 },
               ]}
             >
-              Emergency SOS Need help? Alert your guardians instantly.
+              Need help? Alert your guardians instantly.
             </Text>
           </View>
 
