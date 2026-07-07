@@ -14,11 +14,6 @@ export default function HomeScreen() {
   const [contact, setContact] = useState(0);
   const [sendingAlert, setSendingAlert] = useState(false);
 
-  const handleLogout = () => {
-    dispatch(logout());
-    router.replace("/(auth)/login");
-  };
-
   const handleSOSPress = useCallback(() => {
     Alert.alert("🚨 SOS Button", "Emergency button clicked!");
   }, []);
