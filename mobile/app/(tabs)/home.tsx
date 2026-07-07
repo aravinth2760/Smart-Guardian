@@ -1,15 +1,16 @@
 import { Alert, ScrollView, StatusBar } from "react-native";
 import { router } from "expo-router";
 import { useCallback, useState } from "react";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store";
 
 import HomeHeader from "@/components/home/HomeHeader";
-import HomeSOSCard from "@/components/home/HomeSOSCard";
 import HomeQuickActions from "@/components/home/HomeQuickActions";
 import GuardiansList from "@/components/home/HomeGuardians";
 
 export default function HomeScreen() {
-  const [contact, setContact] = useState(0);
   const [sendingAlert, setSendingAlert] = useState(false);
+  const userName = useSelector((state: RootState) => state.auth.user?.name);
 
   const handleSOSPress = useCallback(() => {
     Alert.alert("🚨 SOS Button", "Emergency button clicked!");
@@ -38,8 +39,11 @@ export default function HomeScreen() {
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
       <StatusBar barStyle="default" />
-      <HomeHeader contacts={contact} />
-      <HomeSOSCard onPress={handleSOSPress} disabled={sendingAlert} />
+      <HomeHeader
+        userName={userName as string}
+        onSOSPress={handleSOSPress}
+        sendingAlert={sendingAlert}
+      />
       <HomeQuickActions />
       <GuardiansList
         contacts={contacts}
