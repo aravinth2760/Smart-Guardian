@@ -10,7 +10,8 @@
       "bundleIdentifier": "com.aravinth-user.smart-guardian"
     },
     "android": {
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.aravinthuser.smartguardian"
     },
     "web": {
       "output": "static"
