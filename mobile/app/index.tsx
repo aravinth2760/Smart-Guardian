@@ -4,9 +4,17 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 
 export default function Index() {
-  const isAuthenticated = useSelector(
-    (state: RootState) => state.auth.isAuthenticated,
+  const { isAuthenticated, isNewUser, user } = useSelector(
+    (state: RootState) => state.auth,
   );
 
-  return <Redirect href={isAuthenticated ? "/(tabs)/home" : "/(auth)/login"} />;
+  if (!isAuthenticated) {
+    return <Redirect href="/(auth)/login" />;
+  }
+
+  if (isNewUser || !user?.profileCompleted) {
+    return <Redirect href="/(auth)/complete-profile" />;
+  }
+
+  return <Redirect href="/(tabs)/home" />;
 }
