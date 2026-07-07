@@ -44,7 +44,7 @@ export default function HomeChat() {
         >
           {unreadMessages > 0
             ? `${unreadMessages} unread message${unreadMessages > 1 ? "s" : ""}`
-            : "Everyone is caught up ✓"}
+            : "No new messages ✓"}
         </Text>
       </Pressable>
     </View>
