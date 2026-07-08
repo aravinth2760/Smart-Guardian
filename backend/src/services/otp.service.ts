@@ -1,9 +1,8 @@
 import axios from "axios";
-import crypto from "crypto";
 import { prisma } from "../prisma/client.js";
 
 import { normalizePhone } from "../utils/normalizePhone.js";
-import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
+import { createTokens } from "./token.service.js";
 
 const MSG91_OTP_URL = "https://control.msg91.com/api/v5/otp";
 const MSG91_VERIFY_URL = "https://control.msg91.com/api/v5/otp/verify";
@@ -98,39 +97,7 @@ export const verifyOtp = async (phone: string, otp: string) => {
       });
     }
 
-    const accessToken = generateAccessToken({
-      userId: user.id,
-    });
-
-    const refreshToken = generateRefreshToken({
-      userId: user.id,
-    });
-
-    const tokenHash = crypto
-      .createHash("sha256")
-      .update(refreshToken)
-      .digest("hex");
-
-    const expiresAt = new Date(
-      Date.now() + REFRESH_TOKEN_DAYS * 24 * 60 * 60 * 1000,
-    );
-
-    await prisma.$transaction(async (tx) => {
-      // Single-device login
-      await tx.refreshToken.deleteMany({
-        where: {
-          userId: user.id,
-        },
-      });
-
-      await tx.refreshToken.create({
-        data: {
-          tokenHash,
-          userId: user.id,
-          expiresAt,
-        },
-      });
-    });
+    const { accessToken, refreshToken } = await createTokens(user.id);
 
     return {
       message: "OTP verified successfully",
