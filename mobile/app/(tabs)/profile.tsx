@@ -11,6 +11,7 @@ import {
   LogOut,
 } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
 
 import colors from "@/constants/colors";
 import ProfileHeader from "@/components/profile/ProfileHeader";
@@ -21,9 +22,7 @@ const accountItems = [
   {
     icon: User,
     title: "Edit Profile",
-    onPress: () => {
-      console.log("Edit Profile");
-    },
+    onPress: () => router.push("/profile/edit"),
   },
   {
     icon: Shield,
@@ -38,9 +37,7 @@ const safetyItems = [
   {
     icon: Users,
     title: "Manage Guardians",
-    onPress: () => {
-      console.log("Manage Guardians");
-    },
+    onPress: () => router.push("/profile/family-members"),
   },
   {
     icon: Shield,
