@@ -6,18 +6,21 @@ import { ArrowLeft } from "lucide-react-native";
 import * as Contacts from "expo-contacts/legacy";
 
 import colors from "@/constants/colors";
-import ContactCard from "@/components/contacts/ContactCard";
+import ContactCard from "@/components/common/CantactCard";
 import SearchBar from "@/components/common/SearchBar";
-
-type Contact = {
-  id: string;
-  name: string;
-  phone: string;
-};
+import { checkContacts } from "@/api/user.api";
 
 export default function ContactScreen() {
   const [search, setSearch] = useState("");
-  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [contacts, setContacts] = useState<
+    {
+      id: string;
+      name: string;
+      phone: string;
+      isRegistered: boolean;
+      userId: string | null;
+    }[]
+  >([]);
   const formatPhone = (phone: string) => {
     let digits = phone.replace(/\D/g, "");
     if (digits.startsWith("91") && digits.length > 10) {
@@ -44,7 +47,7 @@ export default function ContactScreen() {
         fields: [Contacts.Fields.Name, Contacts.Fields.PhoneNumbers],
       });
 
-      const formattedContacts: Contact[] = data
+      const formattedContacts = data
         .filter((contact) => contact.phoneNumbers?.length)
         .map((contact) => ({
           id: contact.id,
@@ -52,7 +55,35 @@ export default function ContactScreen() {
           phone: formatPhone(contact.phoneNumbers?.[0]?.number || ""),
         }));
 
-      setContacts(formattedContacts);
+      const users = await checkContacts({
+        phones: formattedContacts.map((c) => c.phone),
+      });
+
+      const userMap = new Map(
+        users.map((user) => [formatPhone(user.phone), user]),
+      );
+
+      const contacts = formattedContacts
+        .map((contact) => {
+          const user = userMap.get(contact.phone);
+
+          return {
+            ...contact,
+            isRegistered: !!user,
+            userId: user?.id ?? null,
+          };
+        })
+        .sort((a, b) => {
+          if (a.isRegistered === b.isRegistered) {
+            return a.name.localeCompare(b.name);
+          }
+
+          return a.isRegistered ? -1 : 1;
+        });
+
+      console.log(contacts);
+
+      setContacts(contacts);
     } catch (error) {
       console.log(error);
     }
@@ -89,16 +120,20 @@ export default function ContactScreen() {
           <ContactCard
             name={item.name}
             phone={item.phone}
+            isRegistered={item.isRegistered}
             onPress={() =>
               router.push({
                 pathname: "/chat/[chatId]",
                 params: {
-                  chatId: item.id,
+                  chatId: item.userId!,
                   name: item.name,
                   phone: item.phone,
                 },
               })
             }
+            onInvite={() => {
+              // Invite logic
+            }}
           />
         )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}

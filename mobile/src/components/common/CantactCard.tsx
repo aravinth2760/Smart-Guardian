@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Phone, UserRound } from "lucide-react-native";
 
 import colors from "@/constants/colors";
@@ -6,49 +6,57 @@ import colors from "@/constants/colors";
 interface ContactCardProps {
   name: string;
   phone: string;
-  status?: string;
+  isRegistered?: boolean;
+  onPress?: () => void;
+  onInvite?: () => void;
 }
 
 export default function ContactCard({
   name,
   phone,
-  status = "Active",
+  isRegistered = true,
+  onPress,
+  onInvite,
 }: ContactCardProps) {
-  const isActive = status.toLowerCase() === "active";
+  return isRegistered ? (
+    <Pressable onPress={onPress}>
+      <View style={styles.card}>
+        <View style={styles.avatar}>
+          <UserRound size={22} color={colors.light.primary} />
+        </View>
 
-  return (
+        <View style={styles.content}>
+          <Text numberOfLines={1} style={styles.name}>
+            {name}
+          </Text>
+
+          <View style={styles.phoneRow}>
+            <Phone size={14} color={colors.light.textSecondary} />
+            <Text style={styles.phone}>{phone}</Text>
+          </View>
+        </View>
+      </View>
+    </Pressable>
+  ) : (
     <View style={styles.card}>
       <View style={styles.avatar}>
         <UserRound size={22} color={colors.light.primary} />
       </View>
 
       <View style={styles.content}>
-        <View style={styles.header}>
-          <Text numberOfLines={1} style={styles.name}>
-            {name}
-          </Text>
-
-          <View style={styles.statusContainer}>
-            <View
-              style={[
-                styles.statusDot,
-                {
-                  backgroundColor: isActive
-                    ? colors.light.success
-                    : colors.light.textSecondary,
-                },
-              ]}
-            />
-
-            <Text style={styles.statusText}>{status}</Text>
-          </View>
-        </View>
+        <Text numberOfLines={1} style={styles.name}>
+          {name}
+        </Text>
 
         <View style={styles.phoneRow}>
           <Phone size={14} color={colors.light.textSecondary} />
           <Text style={styles.phone}>{phone}</Text>
         </View>
       </View>
+
+      <Pressable onPress={onInvite}>
+        <Text style={styles.inviteText}>Invite</Text>
+      </Pressable>
     </View>
   );
 }
@@ -57,11 +65,9 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 2,
     borderRadius: 16,
-    marginBottom: 10,
   },
 
   avatar: {
@@ -78,36 +84,10 @@ const styles = StyleSheet.create({
     marginLeft: 14,
   },
 
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-
   name: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: "700",
-    color: colors.light.text,
-    marginRight: 10,
-  },
-
-  statusContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  statusDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-    marginRight: 5,
-  },
-
-  statusText: {
-    fontSize: 11,
-    color: colors.light.textSecondary,
+    fontSize: 14,
     fontWeight: "600",
+    color: colors.light.text,
   },
 
   phoneRow: {
@@ -118,8 +98,14 @@ const styles = StyleSheet.create({
 
   phone: {
     marginLeft: 6,
-    fontSize: 13,
+    fontSize: 12,
     color: colors.light.textSecondary,
     fontWeight: "500",
+  },
+
+  inviteText: {
+    color: colors.light.primary,
+    fontWeight: "600",
+    fontSize: 12,
   },
 });
