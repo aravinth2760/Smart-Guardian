@@ -3,7 +3,9 @@ import {
   Text,
   ActivityIndicator,
   StyleSheet,
+  View,
 } from "react-native";
+import { LucideIcon } from "lucide-react-native";
 
 import colors from "@/constants/colors";
 
@@ -12,6 +14,7 @@ interface AppButtonProps {
   onPress: () => void;
   loading?: boolean;
   disabled?: boolean;
+  Icon?: LucideIcon;
 }
 
 export default function AppButton({
@@ -19,6 +22,7 @@ export default function AppButton({
   onPress,
   loading = false,
   disabled = false,
+  Icon,
 }: AppButtonProps) {
   const isDisabled = loading || disabled;
 
@@ -27,12 +31,15 @@ export default function AppButton({
       onPress={onPress}
       disabled={isDisabled}
       activeOpacity={0.8}
-      style={[styles.primaryButton, loading && styles.disabledButton]}
+      style={[styles.primaryButton, isDisabled && styles.disabledButton]}
     >
       {loading ? (
         <ActivityIndicator color={colors.light.card} />
       ) : (
-        <Text style={styles.buttonText}>{title}</Text>
+        <View style={styles.buttonContent}>
+          {Icon && <Icon size={20} color="#fff" strokeWidth={2.2} />}
+          <Text style={styles.buttonText}>{title}</Text>
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -56,6 +63,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.light.textSecondary,
     shadowOpacity: 0,
     elevation: 0,
+  },
+  buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8, // If your RN version doesn't support gap, use marginRight on the Icon instead.
   },
   buttonText: {
     color: "#ffffff",
