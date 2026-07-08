@@ -1,11 +1,121 @@
-import colors from "@/constants/colors";
-import { StyleSheet, Text } from "react-native";
+import { ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
+import {
+  User,
+  Shield,
+  Users,
+  MapPin,
+  Bell,
+  Globe,
+  CircleHelp,
+  FileText,
+  LogOut,
+} from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+import colors from "@/constants/colors";
+import ProfileHeader from "@/components/profile/ProfileHeader";
+import ProfileSection from "@/components/profile/ProfileSection";
+
+const accountItems = [
+  {
+    icon: User,
+    title: "Edit Profile",
+    onPress: () => {
+      console.log("Edit Profile");
+    },
+  },
+  {
+    icon: Shield,
+    title: "Personal Information",
+    onPress: () => {
+      console.log("Personal Information");
+    },
+  },
+];
+
+const safetyItems = [
+  {
+    icon: Users,
+    title: "Manage Guardians",
+    onPress: () => {
+      console.log("Manage Guardians");
+    },
+  },
+  {
+    icon: Shield,
+    title: "SOS Settings",
+    onPress: () => {
+      console.log("SOS Settings");
+    },
+  },
+  {
+    icon: MapPin,
+    title: "Location Sharing",
+    onPress: () => {
+      console.log("Location Sharing");
+    },
+  },
+];
+
+const preferenceItems = [
+  {
+    icon: Bell,
+    title: "Notifications",
+    onPress: () => {
+      console.log("Notifications");
+    },
+  },
+  {
+    icon: Globe,
+    title: "Language",
+    onPress: () => {
+      console.log("Language");
+    },
+  },
+];
+
+const supportItems = [
+  {
+    icon: CircleHelp,
+    title: "Help Center",
+    onPress: () => {
+      console.log("Help Center");
+    },
+  },
+  {
+    icon: FileText,
+    title: "Privacy Policy",
+    onPress: () => {
+      console.log("Privacy Policy");
+    },
+  },
+];
 
 export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.sectionTitle}>Profile Screen</Text>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+      >
+        <ProfileHeader />
+
+        <ProfileSection title="ACCOUNT" items={accountItems} />
+
+        <ProfileSection title="SAFETY" items={safetyItems} />
+
+        <ProfileSection title="PREFERENCES" items={preferenceItems} />
+
+        <ProfileSection title="SUPPORT" items={supportItems} />
+
+        <Pressable style={styles.logout} onPress={() => console.log("Logout")}>
+          <View style={styles.left}>
+            <LogOut size={20} color="#EF4444" />
+
+            <Text style={styles.logoutText}>Logout</Text>
+          </View>
+        </Pressable>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -16,11 +126,27 @@ const styles = StyleSheet.create({
     backgroundColor: colors.light.background,
   },
 
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: colors.light.text,
-    marginBottom: 12,
-    marginTop: 20,
+  content: {
+    paddingBottom: 40,
+  },
+
+  logout: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    paddingVertical: 18,
+    marginTop: 8,
+  },
+
+  left: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  logoutText: {
+    marginLeft: 16,
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#EF4444",
   },
 });
