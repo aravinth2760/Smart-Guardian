@@ -23,28 +23,24 @@ model Family {
 
 enum Relationship {
   father
-
   mother
-
   son
-
   daughter
-
   grandfather
-
   grandmother
-
   guardian
-
   other
 }
 
 enum Permission {
   owner
-
   manager
-
   member
+}
+
+enum ChatType {
+  private
+  group
 }
 
 model User {
@@ -67,6 +63,13 @@ model User {
   family Family? @relation(fields: [familyId], references: [id], onDelete: SetNull)
 
   refreshToken RefreshToken?
+
+  // Chat Relations
+  createdChats Chat[] @relation("CreatedChats")
+
+  chatMembers ChatMember[]
+
+  sentMessages Message[] @relation("SentMessages")
 
   createdAt DateTime @default(now())
 
@@ -94,4 +97,64 @@ model RefreshToken {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+model Chat {
+  id String @id @default(cuid())
+
+  type ChatType
+
+  // Used only for group chats
+  name String?
+
+  createdById String
+
+  createdBy User @relation("CreatedChats", fields: [createdById], references: [id], onDelete: Cascade)
+
+  members ChatMember[]
+
+  messages Message[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([createdById])
+}
+
+model ChatMember {
+  id String @id @default(cuid())
+
+  chatId String
+
+  userId String
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  joinedAt DateTime @default(now())
+
+  @@unique([chatId, userId])
+  @@index([chatId])
+  @@index([userId])
+}
+
+model Message {
+  id String @id @default(cuid())
+
+  chatId String
+
+  senderId String
+
+  text String
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  sender User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([chatId])
+  @@index([senderId])
 }
