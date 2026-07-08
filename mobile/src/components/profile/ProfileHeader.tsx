@@ -1,85 +1,111 @@
 import { StyleSheet, Text, View } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { ShieldCheck, UserRound } from "lucide-react-native";
 
 import colors from "@/constants/colors";
 
-interface ProfileHeaderProps {
-  name: string;
-  email: string;
-}
-
-export default function ProfileHeader({ name, email }: ProfileHeaderProps) {
-  const avatarInitial = name.charAt(0).toUpperCase();
-
+export default function ProfileHeader() {
   return (
-    <LinearGradient
-      colors={[colors.light.gradientStart, colors.light.gradientEnd]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.container}
-    >
-      <View style={styles.content}>
+    <View>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.heading}>Profile</Text>
+
+        <Text style={styles.subHeading}>
+          Manage your account and family safety.
+        </Text>
+      </View>
+
+      {/* User Info */}
+      <View style={styles.profileContainer}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{avatarInitial}</Text>
+          <UserRound size={30} color={colors.light.primary} strokeWidth={2} />
         </View>
 
-        <Text style={styles.name}>{name}</Text>
+        <View style={styles.info}>
+          <Text numberOfLines={1} style={styles.name}>
+            Aravinth
+          </Text>
 
-        <Text style={styles.email}>{email}</Text>
+          <View style={styles.roleContainer}>
+            <ShieldCheck
+              size={13}
+              color={colors.light.primary}
+              fill={colors.light.primary}
+            />
 
-        <Text style={styles.tagline}>Stay Safe Always ❤️</Text>
+            <Text style={styles.role}>Parent</Text>
+          </View>
+
+          <Text numberOfLines={1} style={styles.email}>
+            aravinth@gmail.com
+          </Text>
+        </View>
       </View>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    paddingTop: 70,
-    paddingBottom: 36,
-    paddingHorizontal: 24,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
   },
 
-  content: {
+  heading: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: colors.light.text,
+    marginBottom: 2,
+  },
+
+  subHeading: {
+    fontSize: 14,
+    color: colors.light.textSecondary,
+  },
+
+  profileContainer: {
+    flexDirection: "row",
     alignItems: "center",
+    paddingHorizontal: 24,
+    paddingTop: 30,
+    paddingBottom: 18,
   },
 
   avatar: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    borderWidth: 3,
-    borderColor: "rgba(255,255,255,0.35)",
-    alignItems: "center",
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: "#FDECEF",
     justifyContent: "center",
-    marginBottom: 18,
+    alignItems: "center",
   },
 
-  avatarText: {
-    fontSize: 36,
-    fontWeight: "800",
-    color: "#FFFFFF",
+  info: {
+    flex: 1,
+    marginLeft: 18,
   },
 
   name: {
-    fontSize: 24,
-    fontWeight: "800",
-    color: "#FFFFFF",
+    fontSize: 16,
+    color: colors.light.text,
+  },
+
+  roleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 6,
+  },
+
+  role: {
+    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.light.primary,
   },
 
   email: {
-    marginTop: 6,
-    fontSize: 15,
-    color: "rgba(255,255,255,0.9)",
-  },
-
-  tagline: {
-    marginTop: 14,
-    fontSize: 15,
-    color: "rgba(255,255,255,0.95)",
-    textAlign: "center",
+    marginTop: 8,
+    fontSize: 14,
+    color: colors.light.textSecondary,
   },
 });
