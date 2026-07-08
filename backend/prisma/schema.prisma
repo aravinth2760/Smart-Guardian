@@ -8,71 +8,89 @@ datasource db {
 }
 
 model Family {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  name        String
-  familyCode  String   @unique
+  name String
 
-  users       User[]
+  familyCode String @unique
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  users User[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
 }
 
 enum Relationship {
   father
+
   mother
+
   son
+
   daughter
+
   grandfather
+
   grandmother
+
   guardian
+
   other
 }
 
 enum Permission {
   owner
+
   manager
+
   member
 }
 
 model User {
-  id                String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  phone             String   @unique
+  phone String @unique
 
-  name              String?
-  email             String?  @unique
+  name String?
 
-  relationship      Relationship?
-  role              Permission @default(member)
+  email String? @unique
 
-  profileCompleted  Boolean @default(false)
+  relationship Relationship?
 
-  familyId          String?
-  family            Family? @relation(fields: [familyId], references: [id])
+  role Permission @default(member)
 
-  refreshTokens     RefreshToken[]
+  profileCompleted Boolean @default(false)
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  familyId String?
+
+  family Family? @relation(fields: [familyId], references: [id], onDelete: SetNull)
+
+  refreshToken RefreshToken?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
 
   @@index([familyId])
 }
 
 model RefreshToken {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  tokenHash   String   @unique
+  tokenHash String @unique
 
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
 
-  expiresAt   DateTime
-  revokedAt   DateTime?
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  expiresAt DateTime
+
+  revokedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([expiresAt])
