@@ -6,6 +6,17 @@ const phoneSchema = z
 
 const otpSchema = z.string().regex(/^[0-9]{4,6}$/, "Invalid OTP");
 
+const relationshipSchema = z.enum([
+  "father",
+  "mother",
+  "son",
+  "daughter",
+  "grandfather",
+  "grandmother",
+  "guardian",
+  "other",
+]);
+
 export const sendOtpSchema = z.object({
   phone: phoneSchema,
 });
@@ -16,16 +27,13 @@ export const verifyOtpSchema = z.object({
 });
 
 export const completeProfileSchema = z.object({
-  name: z.string().min(2),
-  email: z.string().email().optional(),
-  relationship: z.enum([
-    "father",
-    "mother",
-    "son",
-    "daughter",
-    "grandfather",
-    "grandmother",
-    "guardian",
-    "other",
-  ]),
+  name: z.string().trim().min(2, "Name must be at least 2 characters"),
+  email: z.string().trim().email("Invalid email address"),
+  relationship: relationshipSchema,
+});
+
+export const updateProfileSchema = z.object({
+  name: z.string().trim().min(2, "Name must be at least 2 characters"),
+  email: z.string().trim().email("Invalid email address"),
+  relationship: relationshipSchema,
 });
