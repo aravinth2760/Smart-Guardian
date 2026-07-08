@@ -29,39 +29,25 @@ export default function LogoutButton() {
   };
 
   return (
-    <Pressable
-      onPress={handleLogout}
-      android_ripple={{ color: "#FEE2E2" }}
-      style={({ pressed }) => [styles.container, pressed && styles.pressed]}
-    >
-      <LogOut size={22} color={colors.light.emergency} strokeWidth={2.3} />
+    <Pressable onPress={handleLogout} style={styles.left}>
+      <LogOut size={20} color={colors.light.emergencyLight} />
 
-      <Text style={styles.title}>Logout</Text>
+      <Text style={styles.logoutText}>Logout</Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginTop: 32,
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: "#FEF2F2",
-    borderWidth: 1,
-    borderColor: "#FECACA",
+  left: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
+    paddingHorizontal: 24,
   },
 
-  pressed: {
-    opacity: 0.8,
-  },
-
-  title: {
+  logoutText: {
+    marginLeft: 16,
     fontSize: 16,
-    fontWeight: "700",
-    color: colors.light.emergency,
+    fontWeight: "600",
+    color: "#EF4444",
   },
 });

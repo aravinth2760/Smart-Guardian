@@ -15,6 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileSection from "@/components/profile/ProfileSection";
+import LogoutButton from "@/components/profile/LogoutButton";
 
 const accountItems = [
   {
@@ -108,13 +109,7 @@ export default function ProfileScreen() {
 
         <ProfileSection title="SUPPORT" items={supportItems} />
 
-        <Pressable style={styles.logout} onPress={() => console.log("Logout")}>
-          <View style={styles.left}>
-            <LogOut size={20} color="#EF4444" />
-
-            <Text style={styles.logoutText}>Logout</Text>
-          </View>
-        </Pressable>
+        <LogoutButton />
       </ScrollView>
     </SafeAreaView>
   );
@@ -136,17 +131,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 18,
     marginTop: 8,
-  },
-
-  left: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  logoutText: {
-    marginLeft: 16,
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#EF4444",
   },
 });
