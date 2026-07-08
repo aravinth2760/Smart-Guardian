@@ -6,14 +6,11 @@ import colors from "@/constants/colors";
 interface AppTextInputProps {
   value: string;
   onChangeText: (text: string) => void;
-
   placeholder?: string;
   keyboardType?: any;
   maxLength?: number;
   editable?: boolean;
-
   Icon?: LucideIcon;
-
   error?: string | null;
   isLogin?: boolean;
 }
@@ -31,7 +28,9 @@ export default function AppTextInput({
 }: AppTextInputProps) {
   return (
     <View style={{ marginBottom: 8 }}>
-      <View style={styles.inputContainer}>
+      <View
+        style={[styles.inputContainer, !editable && styles.disabledContainer]}
+      >
         {isLogin && (
           <>
             <View style={styles.countryCode}>
@@ -51,7 +50,7 @@ export default function AppTextInput({
         )}
 
         <TextInput
-          style={styles.input}
+          style={[styles.input, !editable && styles.disabledInput]}
           placeholder={placeholder}
           placeholderTextColor={colors.light.textSecondary}
           keyboardType={keyboardType}
@@ -59,6 +58,9 @@ export default function AppTextInput({
           onChangeText={onChangeText}
           editable={editable}
           maxLength={maxLength}
+          cursorColor={editable ? colors.light.primary : "transparent"}
+          selectionColor={colors.light.primary}
+          selectTextOnFocus={editable}
         />
       </View>
 
@@ -79,6 +81,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 4,
   },
+  disabledContainer: {
+    backgroundColor: colors.light.backgroundSecondary,
+    borderColor: colors.light.cardBorder,
+  },
   countryCode: {
     justifyContent: "center",
     alignItems: "center",
@@ -98,7 +104,11 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     marginLeft: 8,
-    color: "#000",
+    color: colors.light.text,
+    fontSize: 16,
+  },
+  disabledInput: {
+    color: colors.light.textSecondary,
   },
   inputIcon: {
     marginRight: 10,
