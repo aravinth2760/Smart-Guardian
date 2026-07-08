@@ -3,6 +3,8 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft, Mail, User } from "lucide-react-native";
 import { router } from "expo-router";
+import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 
 import colors from "@/constants/colors";
 
@@ -11,12 +13,29 @@ import AppSelect from "@/components/common/AppSelect";
 import AppButton from "@/components/common/AppButton";
 import { Relationship } from "@/types/auth";
 import { validateProfile } from "@/utils/validation";
+import { updateProfile } from "@/api/auth.api";
+import { tokenService } from "@/services/token.service";
+import { setUser } from "@/store/slices/authSlice";
+import { RootState } from "@/store";
 
 export default function EditProfileScreen() {
-  const [name, setName] = useState("John Doe");
-  const [email, setEmail] = useState("john@gmail.com");
-  const [phone] = useState("9876543210");
-  const [relationship, setRelationship] = useState<Relationship>("son");
+  const dispatch = useDispatch();
+  const userData = useSelector((state: RootState) => state.auth.user);
+
+  const [name, setName] = useState(userData?.name ?? "");
+  const [email, setEmail] = useState(userData?.email ?? "");
+  const [phone] = useState(() => {
+    const phone = userData?.phone ?? "";
+    return phone.length === 12 ? phone.slice(2) : phone;
+  });
+  const [relationship, setRelationship] = useState<Relationship>(
+    userData?.relationship ?? "other",
+  );
+
+  const hasChanges =
+    name.trim() !== (userData?.name ?? "") ||
+    email.trim() !== (userData?.email ?? "") ||
+    relationship !== (userData?.relationship ?? "other");
 
   const [loading, setLoading] = useState(false);
 
@@ -43,6 +62,11 @@ export default function EditProfileScreen() {
     setEmailError(null);
     setRelationshipError(null);
 
+    // Nothing changed
+    if (!hasChanges) {
+      return;
+    }
+
     const error = validateProfile(name, email, relationship);
 
     if (error) {
@@ -59,10 +83,17 @@ export default function EditProfileScreen() {
     try {
       setLoading(true);
 
-      // TODO:
-      // await updateProfile(...)
+      const response = await updateProfile({
+        name: name.trim(),
+        email: email.trim(),
+        relationship,
+      });
 
-      router.back();
+      if (response.success) {
+        await tokenService.saveUser(response.data);
+        dispatch(setUser(response.data));
+        router.back();
+      }
     } catch (error) {
       console.log(error);
     } finally {
@@ -117,10 +148,11 @@ export default function EditProfileScreen() {
         <Text style={styles.label}>Phone Number</Text>
 
         <AppTextInput
-          value={phone}
+          value={phone as string}
           onChangeText={() => {}}
           editable={false}
           keyboardType="phone-pad"
+          isLogin={true}
         />
 
         {/* RELATIONSHIP */}
@@ -142,6 +174,7 @@ export default function EditProfileScreen() {
             title="Save Changes"
             onPress={handleSave}
             loading={loading}
+            disabled={!hasChanges || loading}
           />
         </View>
       </View>
