@@ -57,7 +57,8 @@ const styles = StyleSheet.create({
 
   list: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 20,
+    borderRadius: 10,
+    padding: 10,
     overflow: "hidden",
   },
 
