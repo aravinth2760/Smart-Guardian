@@ -45,7 +45,16 @@ export default function ChatScreen() {
         message="Stay connected with your trusted family."
         time=""
         isSafetyCircle={true}
-        onPress={() => router.push(`/chat/0`)}
+        onPress={() =>
+          router.push({
+            pathname: "/chat/[chatId]",
+            params: {
+              chatId: "0",
+              name: "Safety Circle",
+              phone: "",
+            },
+          })
+        }
       />
 
       <FlatList
