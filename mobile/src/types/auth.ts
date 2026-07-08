@@ -57,6 +57,11 @@ export interface CompleteProfileRequest {
   email: string;
   relationship: Relationship;
 }
+export interface UpdateProfileRequest {
+  name: string;
+  email: string;
+  relationship: Relationship;
+}
 
 // Responses
 export interface SendOtpResponse {
@@ -79,6 +84,11 @@ export interface VerifyOtpResponse {
 }
 
 export interface CompleteProfileResponse {
+  success: boolean;
+  message: string;
+  data: User;
+}
+export interface UpdateProfileResponse {
   success: boolean;
   message: string;
   data: User;
