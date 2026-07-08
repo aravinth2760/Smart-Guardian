@@ -21,10 +21,6 @@ export const tokenService = {
     return secureStorage.getItem(REFRESH_TOKEN);
   },
 
-  async updateAccessToken(accessToken: string) {
-    await secureStorage.setItem(ACCESS_TOKEN, accessToken);
-  },
-
   async saveUser(user: User) {
     await secureStorage.setItem(USER_DATA, JSON.stringify(user));
   },
@@ -43,4 +39,3 @@ export const tokenService = {
     await secureStorage.clearAuth();
   },
 };
-
