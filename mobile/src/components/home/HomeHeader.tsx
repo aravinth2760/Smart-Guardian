@@ -7,7 +7,6 @@ import {
 } from "react-native";
 import { Shield, Bell } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { StatusBar } from "react-native";
 
 import SOSButton from "@/components/common/SOSButton";
 import colors from "@/constants/colors";
@@ -36,11 +35,6 @@ export default function HomeHeader({
 
   return (
     <View>
-      <StatusBar
-        barStyle="light-content"
-        backgroundColor="transparent"
-        translucent
-      />
       <LinearGradient
         colors={[colors.light.gradientStart, colors.light.gradientEnd]}
         start={{ x: 0, y: 0 }}
