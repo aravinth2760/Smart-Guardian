@@ -33,12 +33,15 @@ const authSlice = createSlice({
       state.user = action.payload;
     },
 
-    setAccessToken(state, action: PayloadAction<string>) {
-      state.accessToken = action.payload;
-    },
-
-    setRefreshToken(state, action: PayloadAction<string>) {
-      state.refreshToken = action.payload;
+    setTokens(
+      state,
+      action: PayloadAction<{
+        accessToken: string;
+        refreshToken: string;
+      }>,
+    ) {
+      state.accessToken = action.payload.accessToken;
+      state.refreshToken = action.payload.refreshToken;
     },
 
     logout(state) {
@@ -51,7 +54,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { login, setUser, setAccessToken, setRefreshToken, logout } =
-  authSlice.actions;
+export const { login, setUser, setTokens, logout } = authSlice.actions;
 
 export default authSlice.reducer;
