@@ -16,8 +16,9 @@ import { useSelector } from "react-redux";
 
 import { getMessages, sendMessage } from "@/services/chat.service";
 
+import { useSocket } from "@/provider/SocketProvider";
+
 import colors from "@/constants/colors";
-import { socket } from "@/services/socket";
 import { RootState } from "@/store";
 
 export default function ChatDetailsScreen() {
@@ -31,18 +32,21 @@ export default function ChatDetailsScreen() {
 
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<any[]>([]);
+  const { socket } = useSocket();
 
   useEffect(() => {
+    if (!chatId) return;
+
     const handleNewMessage = (newMessage: any) => {
       setMessages((prev) => [...prev, newMessage]);
     };
 
     const init = async () => {
-      socket.connect();
       socket.emit("join-chat", chatId);
 
       try {
         const res = await getMessages(chatId);
+
         setMessages(res.data.data);
       } catch (err) {
         console.log(err);
@@ -55,8 +59,8 @@ export default function ChatDetailsScreen() {
 
     return () => {
       socket.off("new-message", handleNewMessage);
+
       socket.emit("leave-chat", chatId);
-      socket.disconnect();
     };
   }, [chatId]);
 

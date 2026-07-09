@@ -5,16 +5,19 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { store } from "@/store/index";
 import AuthProvider from "@/provider/AuthProvider";
 import { ContactsProvider } from "@/provider/ContactsProvider";
+import { SocketProvider } from "@/provider/SocketProvider";
 
 export default function RootLayout() {
   return (
     <Provider store={store}>
       <AuthProvider>
-        <ContactsProvider>
-          <SafeAreaProvider>
-            <Stack screenOptions={{ headerShown: false }} />
-          </SafeAreaProvider>
-        </ContactsProvider>
+        <SocketProvider>
+          <ContactsProvider>
+            <SafeAreaProvider>
+              <Stack screenOptions={{ headerShown: false }} />
+            </SafeAreaProvider>
+          </ContactsProvider>
+        </SocketProvider>
       </AuthProvider>
     </Provider>
   );
