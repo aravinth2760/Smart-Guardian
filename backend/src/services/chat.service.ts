@@ -57,3 +57,40 @@ export const getOrCreatePrivateChat = async (
 
   return chat;
 };
+
+export const sendMessage = async (
+  chatId: string,
+  senderId: string,
+  text: string,
+) => {
+  // Check if sender is a member of the chat
+  const member = await prisma.chatMember.findFirst({
+    where: {
+      chatId,
+      userId: senderId,
+    },
+  });
+
+  if (!member) {
+    throw new Error("You are not a member of this chat");
+  }
+
+  const message = await prisma.message.create({
+    data: {
+      chatId,
+      senderId,
+      text,
+    },
+    include: {
+      sender: {
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+        },
+      },
+    },
+  });
+
+  return message;
+};
