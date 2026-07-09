@@ -75,22 +75,78 @@ export const sendMessage = async (
     throw new Error("You are not a member of this chat");
   }
 
-  const message = await prisma.message.create({
-    data: {
-      chatId,
-      senderId,
-      text,
-    },
-    include: {
-      sender: {
-        select: {
-          id: true,
-          name: true,
-          phone: true,
+  // Create message and update chat timestamp
+  const [message] = await prisma.$transaction([
+    prisma.message.create({
+      data: {
+        chatId,
+        senderId,
+        text,
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+          },
+        },
+      },
+    }),
+
+    prisma.chat.update({
+      where: {
+        id: chatId,
+      },
+      data: {
+        updatedAt: new Date(),
+      },
+    }),
+  ]);
+
+  return message;
+};
+
+export const getUserChats = async (userId: string) => {
+  const chats = await prisma.chat.findMany({
+    where: {
+      members: {
+        some: {
+          userId,
         },
       },
     },
+    include: {
+      members: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              phone: true,
+            },
+          },
+        },
+      },
+      messages: {
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 1,
+        include: {
+          sender: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      updatedAt: "desc",
+    },
   });
 
-  return message;
+  return chats;
 };
