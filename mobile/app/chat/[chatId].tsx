@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -12,15 +12,13 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft, Phone, Video, SendHorizontal } from "lucide-react-native";
+import { useSelector } from "react-redux";
+
+import { getMessages, sendMessage } from "@/services/chat.service";
 
 import colors from "@/constants/colors";
-
-type Message = {
-  id: string;
-  text: string;
-  sender: "me" | "other";
-  time: string;
-};
+import { socket } from "@/services/socket";
+import { RootState } from "@/store";
 
 export default function ChatDetailsScreen() {
   const { chatId, name, phone } = useLocalSearchParams<{
@@ -29,75 +27,87 @@ export default function ChatDetailsScreen() {
     phone: string;
   }>();
 
+  const currentUser = useSelector((state: RootState) => state.auth?.user);
+
   const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<any[]>([]);
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      text: "Hello 👋",
-      sender: "other",
-      time: "10:20 AM",
-    },
-    {
-      id: "2",
-      text: "Hi, how are you?",
-      sender: "me",
-      time: "10:21 AM",
-    },
-    {
-      id: "3",
-      text: "I'm safe. Reached home.",
-      sender: "other",
-      time: "10:22 AM",
-    },
-  ]);
+  useEffect(() => {
+    const handleNewMessage = (newMessage: any) => {
+      setMessages((prev) => [...prev, newMessage]);
+    };
 
-  const sendMessage = () => {
+    const init = async () => {
+      socket.connect();
+      socket.emit("join-chat", chatId);
+
+      try {
+        const res = await getMessages(chatId);
+        setMessages(res.data.data);
+      } catch (err) {
+        console.log(err);
+      }
+
+      socket.on("new-message", handleNewMessage);
+    };
+
+    init();
+
+    return () => {
+      socket.off("new-message", handleNewMessage);
+      socket.emit("leave-chat", chatId);
+      socket.disconnect();
+    };
+  }, [chatId]);
+
+  const onSend = async () => {
     if (!message.trim()) return;
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: Date.now().toString(),
-        text: message,
-        sender: "me",
-        time: "Now",
-      },
-    ]);
-
-    setMessage("");
+    try {
+      await sendMessage(chatId, message);
+      setMessage("");
+    } catch (err) {
+      console.log(err);
+    }
   };
 
-  const renderItem = ({ item }: { item: Message }) => (
-    <View
-      style={[
-        styles.messageContainer,
-        item.sender === "me" ? styles.myMessage : styles.otherMessage,
-      ]}
-    >
-      <Text
-        style={[
-          styles.messageText,
-          item.sender === "me" && {
-            color: "#fff",
-          },
-        ]}
-      >
-        {item.text}
-      </Text>
+  const renderItem = ({ item }: { item: any }) => {
+    const isMe = item.senderId === currentUser?.id;
 
-      <Text
+    return (
+      <View
         style={[
-          styles.messageTime,
-          item.sender === "me" && {
-            color: "#FCE7F3",
-          },
+          styles.messageContainer,
+          isMe ? styles.myMessage : styles.otherMessage,
         ]}
       >
-        {item.time}
-      </Text>
-    </View>
-  );
+        <Text
+          style={[
+            styles.messageText,
+            isMe && {
+              color: "#fff",
+            },
+          ]}
+        >
+          {item.text}
+        </Text>
+
+        <Text
+          style={[
+            styles.messageTime,
+            isMe && {
+              color: "#FCE7F3",
+            },
+          ]}
+        >
+          {new Date(item.createdAt).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </Text>
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -106,7 +116,6 @@ export default function ChatDetailsScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         {/* Header */}
-
         <View style={styles.header}>
           <Pressable onPress={() => router.replace("/(tabs)/chat")}>
             <ArrowLeft size={24} color={colors.light.text} />
@@ -123,19 +132,15 @@ export default function ChatDetailsScreen() {
 
             <View>
               <Text style={styles.name}>{name || "Unknown"}</Text>
-
               <Text style={styles.status}>{phone || "No Number"}</Text>
             </View>
           </View>
 
           <View style={styles.actions}>
             <Phone size={20} color={colors.light.text} />
-
             <Video size={20} color={colors.light.text} />
           </View>
         </View>
-
-        {/* Messages */}
 
         <FlatList
           data={messages}
@@ -144,8 +149,6 @@ export default function ChatDetailsScreen() {
           contentContainerStyle={styles.messages}
           showsVerticalScrollIndicator={false}
         />
-
-        {/* Input */}
 
         <View style={styles.inputContainer}>
           <TextInput
@@ -156,7 +159,7 @@ export default function ChatDetailsScreen() {
             style={styles.input}
           />
 
-          <Pressable style={styles.sendButton} onPress={sendMessage}>
+          <Pressable style={styles.sendButton} onPress={onSend}>
             <SendHorizontal size={20} color="#fff" />
           </Pressable>
         </View>
