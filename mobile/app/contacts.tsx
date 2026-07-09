@@ -1,116 +1,87 @@
-import { useEffect, useMemo, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
-import * as Contacts from "expo-contacts/legacy";
 
 import colors from "@/constants/colors";
 import ContactCard from "@/components/common/CantactCard";
 import SearchBar from "@/components/common/SearchBar";
-import { checkContacts } from "@/api/user.api";
+import { createPrivateChat } from "@/services/chat.service";
+import { useContacts } from "@/provider/ContactsProvider";
 
 export default function ContactScreen() {
+  const { contacts, loaded } = useContacts();
   const [search, setSearch] = useState("");
-  const [contacts, setContacts] = useState<
-    {
-      id: string;
-      name: string;
-      phone: string;
-      isRegistered: boolean;
-      userId: string | null;
-    }[]
-  >([]);
-  const formatPhone = (phone: string) => {
-    let digits = phone.replace(/\D/g, "");
-    if (digits.startsWith("91") && digits.length > 10) {
-      digits = digits.slice(-10);
-    }
-    if (digits.length === 10) {
-      return `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`;
-    }
-    return phone;
-  };
-
-  useEffect(() => {
-    loadContacts();
-  }, []);
-
-  const loadContacts = async () => {
-    try {
-      const { status } = await Contacts.requestPermissionsAsync();
-      if (status !== "granted") {
-        return;
-      }
-
-      const { data } = await Contacts.getContactsAsync({
-        fields: [Contacts.Fields.Name, Contacts.Fields.PhoneNumbers],
-      });
-
-      const formattedContacts = data
-        .filter((contact) => contact.phoneNumbers?.length)
-        .map((contact) => ({
-          id: contact.id,
-          name: contact.name || "Unknown",
-          phone: formatPhone(contact.phoneNumbers?.[0]?.number || ""),
-        }));
-
-      const users = await checkContacts({
-        phones: formattedContacts.map((c) => c.phone),
-      });
-
-      const userMap = new Map(
-        users.map((user) => [formatPhone(user.phone), user]),
-      );
-
-      const contacts = formattedContacts
-        .map((contact) => {
-          const user = userMap.get(contact.phone);
-
-          return {
-            ...contact,
-            isRegistered: !!user,
-            userId: user?.id ?? null,
-          };
-        })
-        .sort((a, b) => {
-          if (a.isRegistered === b.isRegistered) {
-            return a.name.localeCompare(b.name);
-          }
-
-          return a.isRegistered ? -1 : 1;
-        });
-
-      console.log(contacts);
-
-      setContacts(contacts);
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   const filteredContacts = useMemo(() => {
+    const keyword = search.trim().toLowerCase();
+
+    if (!keyword) {
+      return contacts;
+    }
+
     return contacts.filter(
       (contact) =>
-        contact.name.toLowerCase().includes(search.toLowerCase()) ||
-        contact.phone.includes(search),
+        contact.name.toLowerCase().includes(keyword) ||
+        contact.phone.includes(search.trim()),
     );
   }, [contacts, search]);
 
+  const handleContactPress = async (item: any) => {
+    if (!item.isRegistered || !item.userId) {
+      return;
+    }
+
+    try {
+      const response = await createPrivateChat(item.userId);
+
+      const chat = response.data.data;
+
+      router.push({
+        pathname: "/chat/[chatId]",
+        params: {
+          chatId: chat.id,
+          name: item.name,
+          phone: item.phone,
+        },
+      });
+    } catch (error) {
+      console.log("Create chat error:", error);
+    }
+  };
+
+  if (!loaded) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.light.primary} />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      {/* Fixed Header */}
       <View style={styles.header}>
         <Pressable style={styles.backButton} onPress={() => router.back()}>
           <ArrowLeft size={22} color={colors.light.text} />
         </Pressable>
 
         <View style={styles.searchContainer}>
-          <SearchBar value={search} onChangeText={setSearch} />
+          <SearchBar
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Search contacts..."
+          />
         </View>
       </View>
 
-      {/* Contacts List */}
       <FlatList
         data={filteredContacts}
         keyExtractor={(item) => item.id}
@@ -121,18 +92,9 @@ export default function ContactScreen() {
             name={item.name}
             phone={item.phone}
             isRegistered={item.isRegistered}
-            onPress={() =>
-              router.push({
-                pathname: "/chat/[chatId]",
-                params: {
-                  chatId: item.userId!,
-                  name: item.name,
-                  phone: item.phone,
-                },
-              })
-            }
+            onPress={() => handleContactPress(item)}
             onInvite={() => {
-              // Invite logic
+              // TODO: Invite logic
             }}
           />
         )}
@@ -156,6 +118,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.light.background,
     paddingHorizontal: 20,
+  },
+
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.light.background,
   },
 
   header: {
