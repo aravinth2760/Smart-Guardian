@@ -104,8 +104,11 @@ model Chat {
 
   type ChatType
 
-  // Used only for group chats
+  // Group chat name
   name String?
+
+  // Only for private chat
+  privateKey String? @unique
 
   createdById String
 
