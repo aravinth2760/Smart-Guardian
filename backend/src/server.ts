@@ -1,21 +1,13 @@
-import "dotenv/config";
-
+import http from "http";
 import app from "./app.js";
-import { connectDb } from "./prisma/client.js";
+import { initSocket } from "./socket.js";
 
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = process.env.PORT || 5001;
 
-const startServer = async () => {
-  try {
-    await connectDb();
+const server = http.createServer(app);
 
-    app.listen(PORT, "0.0.0.0", () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
-    });
-  } catch (error) {
-    console.error("Failed to start server:", error);
-    process.exit(1);
-  }
-};
+initSocket(server);
 
-startServer();
+server.listen(PORT, () => {
+  console.log(`Server running on ${PORT}`);
+});
