@@ -3,6 +3,7 @@ import {
   getOrCreatePrivateChat,
   sendMessage,
   getUserChats,
+  getMessages,
 } from "../services/chat.service.js";
 
 export const createPrivateChat = async (req: Request, res: Response) => {
@@ -84,6 +85,39 @@ export const getChats = async (req: Request, res: Response) => {
     });
   } catch (err: any) {
     return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+export const getChatMessages = async (
+  req: Request<{ chatId: string }>,
+  res: Response,
+) => {
+  try {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const { chatId } = req.params;
+
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 20;
+
+    const messages = await getMessages(chatId, userId, page, limit);
+
+    return res.status(200).json({
+      success: true,
+      data: messages,
+    });
+  } catch (err: any) {
+    return res.status(400).json({
       success: false,
       message: err.message,
     });

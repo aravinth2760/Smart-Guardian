@@ -150,3 +150,46 @@ export const getUserChats = async (userId: string) => {
 
   return chats;
 };
+
+export const getMessages = async (
+  chatId: string,
+  userId: string,
+  page = 1,
+  limit = 20,
+) => {
+  // Check if user is a member of the chat
+  const member = await prisma.chatMember.findFirst({
+    where: {
+      chatId,
+      userId,
+    },
+  });
+
+  if (!member) {
+    throw new Error("You are not a member of this chat");
+  }
+
+  const skip = (page - 1) * limit;
+
+  const messages = await prisma.message.findMany({
+    where: {
+      chatId,
+    },
+    include: {
+      sender: {
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    skip,
+    take: limit,
+  });
+
+  return messages.reverse();
+};
