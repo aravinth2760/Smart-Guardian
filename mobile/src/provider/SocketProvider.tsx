@@ -18,12 +18,17 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     if (!userId) return;
 
     socket.connect();
-
-    socket.emit("join-user", userId);
-
-    console.log("Socket connected:", socket.id);
+    const onConnect = () => {
+      socket.emit("join-user", userId);
+    };
+    socket.on("connect", onConnect);
+    socket.on("connect_error", (err) =>
+      console.log("Socket connection error:", err.message),
+    );
 
     return () => {
+      socket.off("connect", onConnect);
+      socket.off("connect_error");
       socket.disconnect();
     };
   }, [userId]);
