@@ -556,3 +556,55 @@ export const approveJoinRequestService = async (
 
   return result;
 };
+
+export const rejectJoinRequestService = async (
+  ownerId: string,
+  requestId: string,
+) => {
+  const ownerGroup = await prisma.chatMember.findFirst({
+    where: {
+      userId: ownerId,
+
+      role: "owner",
+
+      chat: {
+        type: "group",
+      },
+    },
+  });
+
+  if (!ownerGroup) {
+    throw new Error("Only group owner can reject requests");
+  }
+
+  const request = await prisma.joinRequest.findUnique({
+    where: {
+      id: requestId,
+    },
+  });
+
+  if (!request) {
+    throw new Error("Join request not found");
+  }
+
+  if (request.chatId !== ownerGroup.chatId) {
+    throw new Error("Invalid join request");
+  }
+
+  if (request.status !== "pending") {
+    throw new Error("Request already processed");
+  }
+
+  const updated = await prisma.joinRequest.update({
+    where: {
+      id: requestId,
+    },
+
+    data: {
+      status: "rejected",
+      respondedAt: new Date(),
+    },
+  });
+
+  return updated;
+};

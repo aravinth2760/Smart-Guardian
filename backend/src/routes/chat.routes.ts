@@ -13,6 +13,7 @@ import {
   joinGroup,
   getJoinRequests,
   approveJoinRequest,
+  rejectJoinRequest,
 } from "../controllers/chat.controller.js";
 
 const router = Router();
@@ -43,6 +44,12 @@ router.post(
   "/group/join-requests/:requestId/approve",
   authenticate,
   approveJoinRequest,
+);
+
+router.post(
+  "/group/join-requests/:requestId/reject",
+  authenticate,
+  rejectJoinRequest,
 );
 
 export default router;
