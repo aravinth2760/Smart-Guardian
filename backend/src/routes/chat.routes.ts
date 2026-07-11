@@ -20,4 +20,6 @@ router.get("/:chatId/messages", authenticate, getChatMessages);
 
 router.post("/group", authenticate, createGroup);
 
+router.get("/group", authenticate, getMyGroup);
+
 export default router;

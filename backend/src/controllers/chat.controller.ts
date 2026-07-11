@@ -5,6 +5,7 @@ import {
   getUserChats,
   getMessages,
   createGroupService,
+  getMyGroupService,
 } from "../services/chat.service.js";
 
 export const createPrivateChat = async (req: Request, res: Response) => {
@@ -140,6 +141,24 @@ export const createGroup = async (req: Request, res: Response) => {
     return res.status(400).json({
       success: false,
       message: error instanceof Error ? error.message : "Something went wrong",
+    });
+  }
+};
+
+export const getMyGroup = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.userId;
+
+    const group = await getMyGroupService(userId as string);
+
+    return res.status(200).json({
+      success: true,
+      data: group,
+    });
+  } catch (error: any) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
     });
   }
 };

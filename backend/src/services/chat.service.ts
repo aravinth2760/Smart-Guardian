@@ -235,3 +235,53 @@ export const createGroupService = async (userId: string) => {
     return chat;
   });
 };
+
+export const getMyGroupService = async (userId: string) => {
+  const member = await prisma.chatMember.findFirst({
+    where: {
+      userId,
+      chat: {
+        type: "group",
+      },
+    },
+
+    include: {
+      chat: {
+        include: {
+          members: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  phone: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!member) {
+    throw new Error("You are not part of any Safety Circle");
+  }
+
+  return {
+    id: member.chat.id,
+
+    name: member.chat.name,
+
+    inviteEnabled: member.chat.inviteEnabled,
+
+    role: member.role,
+
+    members: member.chat.members.map((m) => ({
+      id: m.user.id,
+      name: m.user.name,
+      phone: m.user.phone,
+      role: m.role,
+    })),
+  };
+};
