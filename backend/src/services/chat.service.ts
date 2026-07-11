@@ -321,3 +321,35 @@ export const enableInviteService = async (userId: string) => {
     inviteEnabled: updated.inviteEnabled,
   };
 };
+
+export const disableInviteService = async (userId: string) => {
+  const member = await prisma.chatMember.findFirst({
+    where: {
+      userId,
+
+      chat: {
+        type: "group",
+      },
+
+      role: "owner",
+    },
+  });
+
+  if (!member) {
+    throw new Error("Only group owner can disable invite");
+  }
+
+  const updated = await prisma.chat.update({
+    where: {
+      id: member.chatId,
+    },
+
+    data: {
+      inviteEnabled: false,
+    },
+  });
+
+  return {
+    inviteEnabled: updated.inviteEnabled,
+  };
+};
