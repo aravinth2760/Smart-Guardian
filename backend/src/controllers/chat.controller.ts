@@ -14,6 +14,7 @@ import {
   approveJoinRequestService,
   rejectJoinRequestService,
   getGroupMembersService,
+  removeGroupMemberService,
 } from "../services/chat.service.js";
 
 export const createPrivateChat = async (req: Request, res: Response) => {
@@ -324,6 +325,30 @@ export const getGroupMembers = async (req: Request, res: Response) => {
     return res.status(200).json({
       success: true,
       data: members,
+    });
+  } catch (error: any) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const removeGroupMember = async (req: Request, res: Response) => {
+  try {
+    const ownerId = req.user?.userId;
+
+    const { userId } = req.params;
+
+    const result = await removeGroupMemberService(
+      ownerId as string,
+      userId as string,
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Member removed successfully",
+      data: result,
     });
   } catch (error: any) {
     return res.status(400).json({

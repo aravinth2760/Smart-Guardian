@@ -15,6 +15,7 @@ import {
   approveJoinRequest,
   rejectJoinRequest,
   getGroupMembers,
+  removeGroupMember,
 } from "../controllers/chat.controller.js";
 
 const router = Router();
@@ -54,5 +55,7 @@ router.post(
 );
 
 router.get("/group/members", authenticate, getGroupMembers);
+
+router.delete("/group/members/:userId", authenticate, removeGroupMember);
 
 export default router;

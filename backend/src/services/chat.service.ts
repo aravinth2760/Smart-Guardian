@@ -652,3 +652,55 @@ export const getGroupMembersService = async (userId: string) => {
     joinedAt: item.joinedAt,
   }));
 };
+
+export const removeGroupMemberService = async (
+  ownerId: string,
+  removeUserId: string,
+) => {
+  const ownerMember = await prisma.chatMember.findFirst({
+    where: {
+      userId: ownerId,
+
+      role: "owner",
+
+      chat: {
+        type: "group",
+      },
+    },
+  });
+
+  if (!ownerMember) {
+    throw new Error("Only group owner can remove members");
+  }
+
+  if (ownerId === removeUserId) {
+    throw new Error("Owner cannot remove himself");
+  }
+
+  const targetMember = await prisma.chatMember.findUnique({
+    where: {
+      chatId_userId: {
+        chatId: ownerMember.chatId,
+        userId: removeUserId,
+      },
+    },
+  });
+
+  if (!targetMember) {
+    throw new Error("Member not found");
+  }
+
+  if (targetMember.role === "owner") {
+    throw new Error("Cannot remove owner");
+  }
+
+  await prisma.chatMember.delete({
+    where: {
+      id: targetMember.id,
+    },
+  });
+
+  return {
+    removedUserId: removeUserId,
+  };
+};
