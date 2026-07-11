@@ -43,6 +43,17 @@ enum ChatType {
   group
 }
 
+enum ChatMemberRole {
+  owner
+  member
+}
+
+enum JoinRequestStatus {
+  pending
+  approved
+  rejected
+}
+
 model User {
   id String @id @default(cuid())
 
@@ -64,12 +75,13 @@ model User {
 
   refreshToken RefreshToken?
 
-  // Chat Relations
   createdChats Chat[] @relation("CreatedChats")
 
   chatMembers ChatMember[]
 
   sentMessages Message[] @relation("SentMessages")
+
+  joinRequests JoinRequest[]
 
   createdAt DateTime @default(now())
 
@@ -104,17 +116,23 @@ model Chat {
 
   type ChatType
 
-  // Group chat name
-  name String?
+  name String @default("Safety Circle")
 
-  // Only for private chat
+  // Private chat only
   privateKey String? @unique
+
+  // Group invite
+  inviteCode String? @unique
+
+  inviteEnabled Boolean @default(false)
 
   createdById String
 
   createdBy User @relation("CreatedChats", fields: [createdById], references: [id], onDelete: Cascade)
 
   members ChatMember[]
+
+  joinRequests JoinRequest[]
 
   messages Message[]
 
@@ -132,15 +150,40 @@ model ChatMember {
 
   userId String
 
+  role ChatMemberRole @default(member)
+
+  joinedAt DateTime @default(now())
+
   chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  joinedAt DateTime @default(now())
+  @@unique([chatId, userId])
+  @@index([chatId])
+  @@index([userId])
+}
+
+model JoinRequest {
+  id String @id @default(cuid())
+
+  chatId String
+
+  userId String
+
+  status JoinRequestStatus @default(pending)
+
+  requestedAt DateTime @default(now())
+
+  respondedAt DateTime?
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([chatId, userId])
   @@index([chatId])
   @@index([userId])
+  @@index([status])
 }
 
 model Message {
