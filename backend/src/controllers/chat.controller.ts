@@ -20,6 +20,7 @@ import {
   getGroupMessagesService,
   sendGroupMessageService,
 } from "../services/chat.service.js";
+import { getIO } from "../socket.js";
 
 export const createPrivateChat = async (req: Request, res: Response) => {
   try {
@@ -427,6 +428,8 @@ export const sendGroupMessage = async (req: Request, res: Response) => {
     const { text } = req.body;
 
     const message = await sendGroupMessageService(userId as string, text);
+
+    getIO().to(message.chatId).emit("new-message", message);
 
     return res.status(201).json({
       success: true,
