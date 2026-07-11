@@ -6,6 +6,7 @@
     "@reduxjs/toolkit": "^2.12.0",
     "axios": "^1.18.1",
     "expo": "~57.0.4",
+    "expo-clipboard": "~57.0.0",
     "expo-constants": "~57.0.3",
     "expo-contacts": "~57.0.0",
     "expo-font": "~57.0.0",
