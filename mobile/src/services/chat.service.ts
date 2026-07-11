@@ -10,3 +10,8 @@ export const getMessages = (chatId: string) =>
 
 export const sendMessage = (chatId: string, text: string) =>
   api.post("/chat/message", { chatId, text });
+
+export const getGroupMessages = () => api.get("/chat/group/messages");
+
+export const sendGroupMessage = (text: string) =>
+  api.post("/chat/group/message", { text });
