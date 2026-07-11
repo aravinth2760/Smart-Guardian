@@ -14,6 +14,7 @@ import {
   getJoinRequests,
   approveJoinRequest,
   rejectJoinRequest,
+  getGroupMembers,
 } from "../controllers/chat.controller.js";
 
 const router = Router();
@@ -51,5 +52,7 @@ router.post(
   authenticate,
   rejectJoinRequest,
 );
+
+router.get("/group/members", authenticate, getGroupMembers);
 
 export default router;

@@ -13,6 +13,7 @@ import {
   getJoinRequestsService,
   approveJoinRequestService,
   rejectJoinRequestService,
+  getGroupMembersService,
 } from "../services/chat.service.js";
 
 export const createPrivateChat = async (req: Request, res: Response) => {
@@ -305,6 +306,24 @@ export const rejectJoinRequest = async (req: Request, res: Response) => {
       success: true,
       message: "Join request rejected successfully",
       data: result,
+    });
+  } catch (error: any) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getGroupMembers = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.userId;
+
+    const members = await getGroupMembersService(userId as string);
+
+    return res.status(200).json({
+      success: true,
+      data: members,
     });
   } catch (error: any) {
     return res.status(400).json({
