@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux";
 import colors from "@/constants/colors";
 import { logout } from "@/store/slices/authSlice";
 import { tokenService } from "@/services/token.service";
+import { socket } from "@/services/socket";
 
 export default function LogoutButton() {
   const dispatch = useDispatch();
@@ -20,6 +21,7 @@ export default function LogoutButton() {
         text: "Logout",
         style: "destructive",
         onPress: async () => {
+          socket.disconnect();
           await tokenService.removeTokens();
           dispatch(logout());
           router.replace("/(auth)/login");
