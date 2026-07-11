@@ -12,6 +12,7 @@ import {
   regenerateInviteCode,
   joinGroup,
   getJoinRequests,
+  approveJoinRequest,
 } from "../controllers/chat.controller.js";
 
 const router = Router();
@@ -37,5 +38,11 @@ router.post("/group/invite/regenerate", authenticate, regenerateInviteCode);
 router.post("/group/join", authenticate, joinGroup);
 
 router.get("/group/join-requests", authenticate, getJoinRequests);
+
+router.post(
+  "/group/join-requests/:requestId/approve",
+  authenticate,
+  approveJoinRequest,
+);
 
 export default router;

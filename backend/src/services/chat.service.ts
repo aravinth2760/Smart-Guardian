@@ -494,3 +494,65 @@ export const getJoinRequestsService = async (userId: string) => {
 
   return requests;
 };
+
+export const approveJoinRequestService = async (
+  ownerId: string,
+  requestId: string,
+) => {
+  const ownerGroup = await prisma.chatMember.findFirst({
+    where: {
+      userId: ownerId,
+
+      role: "owner",
+
+      chat: {
+        type: "group",
+      },
+    },
+  });
+
+  if (!ownerGroup) {
+    throw new Error("Only group owner can approve requests");
+  }
+
+  const request = await prisma.joinRequest.findUnique({
+    where: {
+      id: requestId,
+    },
+  });
+
+  if (!request) {
+    throw new Error("Join request not found");
+  }
+
+  if (request.chatId !== ownerGroup.chatId) {
+    throw new Error("Invalid join request");
+  }
+
+  if (request.status !== "pending") {
+    throw new Error("Request already processed");
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    await tx.chatMember.create({
+      data: {
+        chatId: request.chatId,
+        userId: request.userId,
+        role: "member",
+      },
+    });
+
+    return await tx.joinRequest.update({
+      where: {
+        id: requestId,
+      },
+
+      data: {
+        status: "approved",
+        respondedAt: new Date(),
+      },
+    });
+  });
+
+  return result;
+};
