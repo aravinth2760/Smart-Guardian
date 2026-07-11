@@ -353,3 +353,51 @@ export const disableInviteService = async (userId: string) => {
     inviteEnabled: updated.inviteEnabled,
   };
 };
+
+export const regenerateInviteCodeService = async (userId: string) => {
+  const member = await prisma.chatMember.findFirst({
+    where: {
+      userId,
+
+      chat: {
+        type: "group",
+      },
+
+      role: "owner",
+    },
+  });
+
+  if (!member) {
+    throw new Error("Only group owner can regenerate invite code");
+  }
+
+  let newCode: string;
+
+  while (true) {
+    newCode = generateInviteCode();
+
+    const exists = await prisma.chat.findUnique({
+      where: {
+        inviteCode: newCode,
+      },
+    });
+
+    if (!exists) {
+      break;
+    }
+  }
+
+  const updated = await prisma.chat.update({
+    where: {
+      id: member.chatId,
+    },
+
+    data: {
+      inviteCode: newCode,
+    },
+  });
+
+  return {
+    inviteCode: updated.inviteCode,
+  };
+};
