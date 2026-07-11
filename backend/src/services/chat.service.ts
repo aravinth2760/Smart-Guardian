@@ -270,13 +270,10 @@ export const getMyGroupService = async (userId: string) => {
 
   return {
     id: member.chat.id,
-
     name: member.chat.name,
-
     inviteEnabled: member.chat.inviteEnabled,
-
+    inviteCode: member.chat.inviteCode,
     role: member.role,
-
     members: member.chat.members.map((m) => ({
       id: m.user.id,
       name: m.user.name,
