@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -21,6 +21,13 @@ import { useSocket } from "@/provider/SocketProvider";
 import colors from "@/constants/colors";
 import { RootState } from "@/store";
 
+type Message = {
+  id: string;
+  text: string;
+  createdAt: string;
+  senderId: string;
+};
+
 export default function ChatDetailsScreen() {
   const { chatId, name, phone } = useLocalSearchParams<{
     chatId: string;
@@ -33,29 +40,50 @@ export default function ChatDetailsScreen() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<any[]>([]);
   const { socket } = useSocket();
+  const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
-    if (!chatId) return;
+    if (!chatId) {
+      return;
+    }
 
-    const handleNewMessage = (newMessage: any) => {
+    const handleNewMessage = (newMessage: Message) => {
       setMessages((prev) => [...prev, newMessage]);
+
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({
+          animated: true,
+        });
+      }, 100);
     };
-    socket.emit("join-chat", chatId);
-    socket.on("new-message", handleNewMessage);
+
     const loadMessages = async () => {
       try {
         const res = await getMessages(chatId);
         setMessages(res.data.data);
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({
+            animated: false,
+          });
+        }, 100);
       } catch (err) {
         console.log(err);
       }
     };
 
-    loadMessages();
+    const joinChat = () => socket.emit("join-chat", chatId);
+    if (socket.connected) {
+      joinChat();
+    } else {
+      socket.once("connect", joinChat);
+    }
+    socket.on("new-message", handleNewMessage);
+    void loadMessages();
 
     return () => {
       socket.emit("leave-chat", chatId);
       socket.off("new-message", handleNewMessage);
+      socket.off("connect", joinChat);
     };
   }, [chatId]);
 
