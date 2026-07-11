@@ -6,6 +6,8 @@ import {
   getChats,
   getChatMessages,
   createGroup,
+  getMyGroup,
+  enableInvite,
 } from "../controllers/chat.controller.js";
 
 const router = Router();
@@ -21,5 +23,7 @@ router.get("/:chatId/messages", authenticate, getChatMessages);
 router.post("/group", authenticate, createGroup);
 
 router.get("/group", authenticate, getMyGroup);
+
+router.post("/group/invite/enable", authenticate, enableInvite);
 
 export default router;
