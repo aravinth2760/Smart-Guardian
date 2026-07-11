@@ -769,3 +769,33 @@ export const transferOwnerService = async (
     newOwner: newOwnerId,
   };
 };
+
+export const leaveGroupService = async (userId: string) => {
+  const member = await prisma.chatMember.findFirst({
+    where: {
+      userId,
+
+      chat: {
+        type: "group",
+      },
+    },
+  });
+
+  if (!member) {
+    throw new Error("You are not a group member");
+  }
+
+  if (member.role === "owner") {
+    throw new Error("Owner cannot leave. Transfer ownership first.");
+  }
+
+  await prisma.chatMember.delete({
+    where: {
+      id: member.id,
+    },
+  });
+
+  return {
+    userId,
+  };
+};
