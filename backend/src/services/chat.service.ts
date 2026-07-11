@@ -837,3 +837,42 @@ export const getGroupMessagesService = async (userId: string) => {
 
   return messages;
 };
+
+export const sendGroupMessageService = async (userId: string, text: string) => {
+  const member = await prisma.chatMember.findFirst({
+    where: {
+      userId,
+
+      chat: {
+        type: "group",
+      },
+    },
+  });
+
+  if (!member) {
+    throw new Error("You are not a group member");
+  }
+
+  if (!text || !text.trim()) {
+    throw new Error("Message cannot be empty");
+  }
+
+  const message = await prisma.message.create({
+    data: {
+      chatId: member.chatId,
+      senderId: userId,
+      text: text.trim(),
+    },
+
+    include: {
+      sender: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  return message;
+};

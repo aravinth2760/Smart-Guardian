@@ -19,6 +19,7 @@ import {
   transferOwner,
   leaveGroup,
   getGroupMessages,
+  sendGroupMessage,
 } from "../controllers/chat.controller.js";
 
 const router = Router();
@@ -66,5 +67,7 @@ router.post("/group/transfer-owner", authenticate, transferOwner);
 router.post("/group/leave", authenticate, leaveGroup);
 
 router.get("/group/messages", authenticate, getGroupMessages);
+
+router.post("/group/message", authenticate, sendGroupMessage);
 
 export default router;

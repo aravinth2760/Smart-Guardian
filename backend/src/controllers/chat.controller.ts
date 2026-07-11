@@ -18,6 +18,7 @@ import {
   transferOwnerService,
   leaveGroupService,
   getGroupMessagesService,
+  sendGroupMessageService,
 } from "../services/chat.service.js";
 
 export const createPrivateChat = async (req: Request, res: Response) => {
@@ -410,6 +411,27 @@ export const getGroupMessages = async (req: Request, res: Response) => {
     return res.status(200).json({
       success: true,
       data: messages,
+    });
+  } catch (error: any) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const sendGroupMessage = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.userId;
+
+    const { text } = req.body;
+
+    const message = await sendGroupMessageService(userId as string, text);
+
+    return res.status(201).json({
+      success: true,
+      message: "Message sent successfully",
+      data: message,
     });
   } catch (error: any) {
     return res.status(400).json({
