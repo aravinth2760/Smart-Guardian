@@ -12,20 +12,12 @@ export const initSocket = (server: HttpServer) => {
   });
 
   io.on("connection", (socket) => {
-    console.log("User connected:", socket.id);
-
-    socket.on("join-chat", (chatId: string) => {
-      socket.join(chatId);
-      console.log(`${socket.id} joined ${chatId}`);
-    });
-
-    socket.on("leave-chat", (chatId: string) => {
-      socket.leave(chatId);
-    });
-
-    socket.on("disconnect", () => {
-      console.log("User disconnected:", socket.id);
-    });
+    socket.on("join-user", (userId: string) => socket.join(userId));
+    socket.on("join-chat", (chatId: string) => socket.join(chatId));
+    socket.on("leave-chat", (chatId: string) => socket.leave(chatId));
+    socket.on("disconnect", (reason) =>
+      console.log(`Socket disconnected: ${socket.id}, Reason: ${reason}`),
+    );
   });
 
   return io;
