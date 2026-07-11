@@ -14,11 +14,6 @@ export default function RootLayout() {
     if (!socket.connected) {
       socket.connect();
     }
-    return () => {
-      if (socket.connected) {
-        socket.disconnect();
-      }
-    };
   }, []);
 
   return (
