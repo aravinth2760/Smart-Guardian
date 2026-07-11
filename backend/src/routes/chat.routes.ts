@@ -5,6 +5,7 @@ import {
   createMessage,
   getChats,
   getChatMessages,
+  createGroup,
 } from "../controllers/chat.controller.js";
 
 const router = Router();
@@ -16,5 +17,7 @@ router.post("/message", authenticate, createMessage);
 router.get("/", authenticate, getChats);
 
 router.get("/:chatId/messages", authenticate, getChatMessages);
+
+router.post("/group", authenticate, createGroup);
 
 export default router;

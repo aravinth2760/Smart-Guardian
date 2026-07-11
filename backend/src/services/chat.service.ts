@@ -1,5 +1,6 @@
 import { prisma } from "../prisma/client.js";
 import { getIO } from "../socket.js";
+import { generateInviteCode } from "../utils/inviteCode.js";
 
 // Create or Get Private Chat
 export const getOrCreatePrivateChat = async (
@@ -186,4 +187,51 @@ export const getMessages = async (
   });
 
   return messages.reverse();
+};
+
+export const createGroupService = async (userId: string) => {
+  const existingGroup = await prisma.chat.findFirst({
+    where: {
+      createdById: userId,
+      type: "group",
+    },
+  });
+
+  if (existingGroup) {
+    throw new Error("Safety Circle already exists.");
+  }
+
+  let inviteCode: string;
+
+  while (true) {
+    inviteCode = generateInviteCode();
+
+    const exists = await prisma.chat.findUnique({
+      where: { inviteCode },
+    });
+
+    if (!exists) break;
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const chat = await tx.chat.create({
+      data: {
+        type: "group",
+        name: "Safety Circle",
+        inviteCode,
+        inviteEnabled: false,
+        createdById: userId,
+      },
+    });
+
+    await tx.chatMember.create({
+      data: {
+        chatId: chat.id,
+        userId,
+        role: "owner",
+      },
+    });
+
+    return chat;
+  });
 };

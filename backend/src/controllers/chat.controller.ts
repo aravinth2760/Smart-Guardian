@@ -4,6 +4,7 @@ import {
   sendMessage,
   getUserChats,
   getMessages,
+  createGroupService,
 } from "../services/chat.service.js";
 
 export const createPrivateChat = async (req: Request, res: Response) => {
@@ -120,6 +121,25 @@ export const getChatMessages = async (
     return res.status(400).json({
       success: false,
       message: err.message,
+    });
+  }
+};
+
+export const createGroup = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.userId;
+
+    const group = await createGroupService(userId as string);
+
+    return res.status(201).json({
+      success: true,
+      message: "Safety Circle created successfully.",
+      data: group,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error instanceof Error ? error.message : "Something went wrong",
     });
   }
 };
