@@ -799,3 +799,41 @@ export const leaveGroupService = async (userId: string) => {
     userId,
   };
 };
+
+export const getGroupMessagesService = async (userId: string) => {
+  const member = await prisma.chatMember.findFirst({
+    where: {
+      userId,
+
+      chat: {
+        type: "group",
+      },
+    },
+  });
+
+  if (!member) {
+    throw new Error("You are not a group member");
+  }
+
+  const messages = await prisma.message.findMany({
+    where: {
+      chatId: member.chatId,
+    },
+
+    include: {
+      sender: {
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+        },
+      },
+    },
+
+    orderBy: {
+      createdAt: "asc",
+    },
+  });
+
+  return messages;
+};

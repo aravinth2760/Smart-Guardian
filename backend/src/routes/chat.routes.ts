@@ -18,6 +18,7 @@ import {
   removeGroupMember,
   transferOwner,
   leaveGroup,
+  getGroupMessages,
 } from "../controllers/chat.controller.js";
 
 const router = Router();
@@ -63,5 +64,7 @@ router.delete("/group/members/:userId", authenticate, removeGroupMember);
 router.post("/group/transfer-owner", authenticate, transferOwner);
 
 router.post("/group/leave", authenticate, leaveGroup);
+
+router.get("/group/messages", authenticate, getGroupMessages);
 
 export default router;
