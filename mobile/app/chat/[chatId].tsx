@@ -40,27 +40,22 @@ export default function ChatDetailsScreen() {
     const handleNewMessage = (newMessage: any) => {
       setMessages((prev) => [...prev, newMessage]);
     };
-
-    const init = async () => {
-      socket.emit("join-chat", chatId);
-
+    socket.emit("join-chat", chatId);
+    socket.on("new-message", handleNewMessage);
+    const loadMessages = async () => {
       try {
         const res = await getMessages(chatId);
-
         setMessages(res.data.data);
       } catch (err) {
         console.log(err);
       }
-
-      socket.on("new-message", handleNewMessage);
     };
 
-    init();
+    loadMessages();
 
     return () => {
-      socket.off("new-message", handleNewMessage);
-
       socket.emit("leave-chat", chatId);
+      socket.off("new-message", handleNewMessage);
     };
   }, [chatId]);
 
