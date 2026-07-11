@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -7,7 +7,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useSelector } from "react-redux";
 
 import { getChats } from "@/services/chat.service";
@@ -18,6 +18,7 @@ import colors from "@/constants/colors";
 import ChatCard from "@/components/chat/ChatCard";
 import SearchBar from "@/components/common/SearchBar";
 import FloatingButton from "@/components/chat/FloatingButton";
+import { getMyGroup } from "@/services/group.service";
 
 type Chat = {
   id: string;
@@ -36,26 +37,52 @@ type Chat = {
   }[];
 };
 
+type Group = {
+  id: string;
+  name: string;
+  inviteEnabled: boolean;
+  inviteCode: string | null;
+  role: "owner" | "manager" | "member";
+};
+
 export default function ChatScreen() {
   const [search, setSearch] = useState("");
   const [chats, setChats] = useState<Chat[]>([]);
+  const [group, setGroup] = useState<Group | null>(null);
 
   const currentUserId = useSelector((state: RootState) => state.auth.user?.id);
 
   const { loaded, getName } = useContacts();
 
-  useEffect(() => {
-    const loadChats = async () => {
-      try {
-        const res = await getChats();
-        setChats(res.data.data);
-      } catch (error) {
-        console.log("Load chats error:", error);
-      }
-    };
+  const loadChats = async () => {
+    try {
+      const res = await getChats();
+      setChats(res.data.data);
+    } catch (error) {
+      console.log("Load chats error:", error);
+    }
+  };
 
+  const loadGroup = async () => {
+    try {
+      const res = await getMyGroup();
+      setGroup(res);
+    } catch (error) {
+      setGroup(null);
+    }
+  };
+
+  useEffect(() => {
     void loadChats();
+    void loadGroup();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadChats();
+      void loadGroup();
+    }, []),
+  );
 
   const filteredChats = useMemo(() => {
     const keyword = search.trim().toLowerCase();
@@ -97,20 +124,21 @@ export default function ChatScreen() {
       </View>
 
       <ChatCard
-        name="Safety Circle"
-        message="Stay connected with your trusted family."
+        name={group ? group.name : "Create Safety Circle"}
+        message={
+          group
+            ? "Stay connected with your trusted family."
+            : "Create your Safety Circle to start chatting."
+        }
         time=""
         isSafetyCircle
-        onPress={() =>
-          router.push({
-            pathname: "/chat/[chatId]",
-            params: {
-              chatId: "0",
-              name: "Safety Circle",
-              phone: "",
-            },
-          })
-        }
+        onPress={() => {
+          if (group) {
+            router.push("/chat/group");
+          } else {
+            router.push("/group/create");
+          }
+        }}
       />
 
       <FlatList
