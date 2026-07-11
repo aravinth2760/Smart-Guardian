@@ -704,3 +704,68 @@ export const removeGroupMemberService = async (
     removedUserId: removeUserId,
   };
 };
+
+export const transferOwnerService = async (
+  ownerId: string,
+  newOwnerId: string,
+) => {
+  const owner = await prisma.chatMember.findFirst({
+    where: {
+      userId: ownerId,
+
+      role: "owner",
+
+      chat: {
+        type: "group",
+      },
+    },
+  });
+
+  if (!owner) {
+    throw new Error("Only owner can transfer ownership");
+  }
+
+  if (ownerId === newOwnerId) {
+    throw new Error("Already owner");
+  }
+
+  const newOwner = await prisma.chatMember.findUnique({
+    where: {
+      chatId_userId: {
+        chatId: owner.chatId,
+        userId: newOwnerId,
+      },
+    },
+  });
+
+  if (!newOwner) {
+    throw new Error("User is not a group member");
+  }
+
+  await prisma.$transaction([
+    prisma.chatMember.update({
+      where: {
+        id: owner.id,
+      },
+
+      data: {
+        role: "member",
+      },
+    }),
+
+    prisma.chatMember.update({
+      where: {
+        id: newOwner.id,
+      },
+
+      data: {
+        role: "owner",
+      },
+    }),
+  ]);
+
+  return {
+    previousOwner: ownerId,
+    newOwner: newOwnerId,
+  };
+};
