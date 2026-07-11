@@ -11,6 +11,7 @@ import {
   disableInvite,
   regenerateInviteCode,
   joinGroup,
+  getJoinRequests,
 } from "../controllers/chat.controller.js";
 
 const router = Router();
@@ -34,5 +35,7 @@ router.post("/group/invite/disable", authenticate, disableInvite);
 router.post("/group/invite/regenerate", authenticate, regenerateInviteCode);
 
 router.post("/group/join", authenticate, joinGroup);
+
+router.get("/group/join-requests", authenticate, getJoinRequests);
 
 export default router;

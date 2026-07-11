@@ -452,3 +452,45 @@ export const joinGroupService = async (userId: string, inviteCode: string) => {
 
   return request;
 };
+
+export const getJoinRequestsService = async (userId: string) => {
+  const ownerGroup = await prisma.chatMember.findFirst({
+    where: {
+      userId,
+
+      role: "owner",
+
+      chat: {
+        type: "group",
+      },
+    },
+  });
+
+  if (!ownerGroup) {
+    throw new Error("Only group owner can view requests");
+  }
+
+  const requests = await prisma.joinRequest.findMany({
+    where: {
+      chatId: ownerGroup.chatId,
+
+      status: "pending",
+    },
+
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+        },
+      },
+    },
+
+    orderBy: {
+      requestedAt: "desc",
+    },
+  });
+
+  return requests;
+};
