@@ -10,6 +10,7 @@ import {
   enableInvite,
   disableInvite,
   regenerateInviteCode,
+  joinGroup,
 } from "../controllers/chat.controller.js";
 
 const router = Router();
@@ -31,5 +32,7 @@ router.post("/group/invite/enable", authenticate, enableInvite);
 router.post("/group/invite/disable", authenticate, disableInvite);
 
 router.post("/group/invite/regenerate", authenticate, regenerateInviteCode);
+
+router.post("/group/join", authenticate, joinGroup);
 
 export default router;

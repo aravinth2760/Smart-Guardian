@@ -401,3 +401,54 @@ export const regenerateInviteCodeService = async (userId: string) => {
     inviteCode: updated.inviteCode,
   };
 };
+
+export const joinGroupService = async (userId: string, inviteCode: string) => {
+  const chat = await prisma.chat.findUnique({
+    where: {
+      inviteCode,
+    },
+  });
+
+  if (!chat) {
+    throw new Error("Invalid invite code");
+  }
+
+  if (!chat.inviteEnabled) {
+    throw new Error("Invite is disabled");
+  }
+
+  const existingMember = await prisma.chatMember.findUnique({
+    where: {
+      chatId_userId: {
+        chatId: chat.id,
+        userId,
+      },
+    },
+  });
+
+  if (existingMember) {
+    throw new Error("Already a group member");
+  }
+
+  const existingRequest = await prisma.joinRequest.findUnique({
+    where: {
+      chatId_userId: {
+        chatId: chat.id,
+        userId,
+      },
+    },
+  });
+
+  if (existingRequest) {
+    throw new Error("Join request already exists");
+  }
+
+  const request = await prisma.joinRequest.create({
+    data: {
+      chatId: chat.id,
+      userId,
+    },
+  });
+
+  return request;
+};

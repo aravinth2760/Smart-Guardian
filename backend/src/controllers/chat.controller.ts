@@ -9,6 +9,7 @@ import {
   enableInviteService,
   disableInviteService,
   regenerateInviteCodeService,
+  joinGroupService,
 } from "../services/chat.service.js";
 
 export const createPrivateChat = async (req: Request, res: Response) => {
@@ -214,6 +215,27 @@ export const regenerateInviteCode = async (req: Request, res: Response) => {
       success: true,
       message: "Invite code regenerated successfully",
       data: group,
+    });
+  } catch (error: any) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const joinGroup = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.userId;
+
+    const { inviteCode } = req.body;
+
+    const request = await joinGroupService(userId as string, inviteCode);
+
+    return res.status(201).json({
+      success: true,
+      message: "Join request sent successfully",
+      data: request,
     });
   } catch (error: any) {
     return res.status(400).json({
