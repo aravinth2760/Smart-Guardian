@@ -133,7 +133,7 @@ export default function ChatScreen() {
       </View>
 
       <ChatCard
-        name={group ? group.name : "Create Safety Circle"}
+        name={group ? group.name : "Safety Circle"}
         message={
           group
             ? group.lastMessage
@@ -141,7 +141,7 @@ export default function ChatScreen() {
                 ? `You: ${group.lastMessage.text}`
                 : `${group.lastMessage.sender.name}: ${group.lastMessage.text}`
               : "Stay connected with your trusted family."
-            : "Create your Safety Circle to start chatting."
+            : "Get started with your Safety Circle."
         }
         time={
           group?.lastMessage
@@ -156,7 +156,7 @@ export default function ChatScreen() {
           if (group) {
             router.push("/chat/group");
           } else {
-            router.push("/group/create");
+            router.push("/group/setup");
           }
         }}
       />
