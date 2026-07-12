@@ -13,7 +13,7 @@ import {
 
 import LogoutButton from "@/components/profile/LogoutButton";
 import ProfileHeader from "@/components/profile/ProfileHeader";
-import ProfileSection from "@/components/profile/ProfileSection";
+import SettinnsSection from "@/components/common/SettingsSection";
 import ScreenContainer from "@/components/common/ScreenContainer";
 
 const accountItems = [
@@ -40,9 +40,7 @@ const safetyItems = [
   {
     icon: Shield,
     title: "SOS Settings",
-    onPress: () => {
-      console.log("SOS Settings");
-    },
+    onPress: () => router.push("/profile/sos-settings"),
   },
   {
     icon: MapPin,
@@ -96,13 +94,13 @@ export default function ProfileScreen() {
       >
         <ProfileHeader />
 
-        <ProfileSection title="ACCOUNT" items={accountItems} />
+        <SettinnsSection title="ACCOUNT" items={accountItems} />
 
-        <ProfileSection title="SAFETY" items={safetyItems} />
+        <SettinnsSection title="SAFETY" items={safetyItems} />
 
-        <ProfileSection title="PREFERENCES" items={preferenceItems} />
+        <SettinnsSection title="PREFERENCES" items={preferenceItems} />
 
-        <ProfileSection title="SUPPORT" items={supportItems} />
+        <SettinnsSection title="SUPPORT" items={supportItems} />
 
         <LogoutButton />
       </ScrollView>
