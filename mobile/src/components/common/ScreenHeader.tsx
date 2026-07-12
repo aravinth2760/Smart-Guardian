@@ -7,14 +7,21 @@ import colors from "@/constants/colors";
 type Props = {
   title: string;
   subtitle?: string;
+  showBack?: boolean;
 };
 
-export default function ScreenHeader({ title, subtitle }: Props) {
+export default function ScreenHeader({
+  title,
+  subtitle,
+  showBack = true,
+}: Props) {
   return (
     <View style={styles.header}>
-      <Pressable style={styles.backButton} onPress={() => router.back()}>
-        <ArrowLeft size={22} color={colors.light.text} />
-      </Pressable>
+      {showBack && (
+        <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <ArrowLeft size={22} color={colors.light.text} />
+        </Pressable>
+      )}
 
       <View style={styles.content}>
         <Text style={styles.title}>{title}</Text>
