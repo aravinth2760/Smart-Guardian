@@ -28,10 +28,7 @@ import { useState } from "react";
 
 export default function SOSSettingsScreen() {
   const dispatch = useDispatch();
-
   const sosSettings = useSelector((state: RootState) => state.sosSettings);
-
-  const [vibration, setVibration] = useState(false);
 
   const handleLiveLocationToggle = async (value: boolean) => {
     try {
@@ -102,6 +99,18 @@ export default function SOSSettingsScreen() {
       dispatch(setSOSSettings(updatedSettings));
     } catch (error) {
       console.log("Flashlight blink update failed", error);
+    }
+  };
+
+  const handleVibrationToggle = async (value: boolean) => {
+    try {
+      const updatedSettings = await sosSettingsService.update({
+        vibration: value,
+      });
+
+      dispatch(setSOSSettings(updatedSettings));
+    } catch (error) {
+      console.log("Vibration update failed", error);
     }
   };
 
@@ -188,8 +197,8 @@ export default function SOSSettingsScreen() {
               icon: Smartphone,
               title: "Vibration",
               showToggle: true,
-              toggleValue: vibration,
-              onToggleChange: setVibration,
+              toggleValue: sosSettings.vibration,
+              onToggleChange: handleVibrationToggle,
             },
             {
               icon: TestTube2,
