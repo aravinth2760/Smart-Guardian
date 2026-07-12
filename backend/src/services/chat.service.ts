@@ -250,11 +250,19 @@ export const getMyGroupService = async (userId: string) => {
         include: {
           members: {
             include: {
-              user: {
+              user: true,
+            },
+          },
+          messages: {
+            orderBy: {
+              createdAt: "desc",
+            },
+            take: 1,
+            include: {
+              sender: {
                 select: {
                   id: true,
                   name: true,
-                  phone: true,
                 },
               },
             },
@@ -268,12 +276,25 @@ export const getMyGroupService = async (userId: string) => {
     throw new Error("You are not part of any Safety Circle");
   }
 
+  const lastMessage = member.chat.messages[0];
+
   return {
     id: member.chat.id,
     name: member.chat.name,
     inviteEnabled: member.chat.inviteEnabled,
     inviteCode: member.chat.inviteCode,
     role: member.role,
+    lastMessage: lastMessage
+      ? {
+          id: lastMessage.id,
+          text: lastMessage.text,
+          createdAt: lastMessage.createdAt,
+          sender: {
+            id: lastMessage.sender.id,
+            name: lastMessage.sender.name,
+          },
+        }
+      : null,
     members: member.chat.members.map((m) => ({
       id: m.user.id,
       name: m.user.name,
@@ -798,6 +819,7 @@ export const leaveGroupService = async (userId: string) => {
 };
 
 export const getGroupMessagesService = async (userId: string) => {
+  console.log("Inside come");
   const member = await prisma.chatMember.findFirst({
     where: {
       userId,
@@ -831,6 +853,8 @@ export const getGroupMessagesService = async (userId: string) => {
       createdAt: "asc",
     },
   });
+
+  console.log("Members : ", messages);
 
   return messages;
 };
