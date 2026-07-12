@@ -305,6 +305,32 @@ export const getMyGroupService = async (userId: string) => {
   };
 };
 
+export const deleteGroupService = async (userId: string) => {
+  const ownerGroup = await prisma.chatMember.findFirst({
+    where: {
+      userId,
+      role: "owner",
+      chat: {
+        type: "group",
+      },
+    },
+  });
+
+  if (!ownerGroup) {
+    throw new Error("Only the Safety Circle owner can delete the group");
+  }
+
+  await prisma.chat.delete({
+    where: {
+      id: ownerGroup.chatId,
+    },
+  });
+
+  return {
+    message: "Safety Circle deleted successfully.",
+  };
+};
+
 export const enableInviteService = async (userId: string) => {
   const member = await prisma.chatMember.findFirst({
     where: {

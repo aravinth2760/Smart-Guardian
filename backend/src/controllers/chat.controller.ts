@@ -19,6 +19,7 @@ import {
   leaveGroupService,
   getGroupMessagesService,
   sendGroupMessageService,
+  deleteGroupService,
 } from "../services/chat.service.js";
 import { getIO } from "../socket.js";
 
@@ -175,6 +176,16 @@ export const getMyGroup = async (req: Request, res: Response) => {
       message: error.message,
     });
   }
+};
+
+export const deleteGroupController = async (req: Request, res: Response) => {
+  const userId = req.user?.userId;
+  await deleteGroupService(userId as string);
+
+  res.status(200).json({
+    success: true,
+    message: "Safety Circle deleted successfully.",
+  });
 };
 
 export const enableInvite = async (req: Request, res: Response) => {

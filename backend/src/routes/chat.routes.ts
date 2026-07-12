@@ -20,6 +20,7 @@ import {
   leaveGroup,
   getGroupMessages,
   sendGroupMessage,
+  deleteGroupController,
 } from "../controllers/chat.controller.js";
 
 const router = Router();
@@ -32,6 +33,7 @@ router.get("/", authenticate, getChats);
 // Group
 router.post("/group", authenticate, createGroup);
 router.get("/group", authenticate, getMyGroup);
+router.delete("/group/delete", authenticate, deleteGroupController);
 
 router.post("/group/invite/enable", authenticate, enableInvite);
 router.post("/group/invite/disable", authenticate, disableInvite);

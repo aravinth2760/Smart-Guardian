@@ -12,6 +12,11 @@ export const getMyGroup = async () => {
   return response.data;
 };
 
+export const deleteGroup = async () => {
+  const response = await api.delete("/chat/group/delete");
+  return response.data;
+};
+
 // Invite
 
 export const enableInvite = async () => {

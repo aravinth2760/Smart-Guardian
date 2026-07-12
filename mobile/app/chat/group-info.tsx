@@ -4,6 +4,7 @@ import {
   ChevronRight,
   LogOut,
   Shield,
+  Trash2,
   UserCheck,
   Users,
 } from "lucide-react-native";
@@ -14,7 +15,7 @@ import { useSelector } from "react-redux";
 import ScreenHeader from "@/components/common/ScreenHeader";
 import colors from "@/constants/colors";
 import { RootState } from "@/store";
-import { getMyGroup, leaveGroup } from "@/services/group.service";
+import { getMyGroup, leaveGroup, deleteGroup } from "@/services/group.service";
 
 export default function GroupInfoScreen() {
   const currentUserId = useSelector((state: RootState) => state.auth.user?.id);
@@ -79,6 +80,36 @@ export default function GroupInfoScreen() {
     );
   };
 
+  const handleDeleteGroup = () => {
+    Alert.alert(
+      "Delete Safety Circle",
+      "This will permanently delete the Safety Circle, remove all members, messages, and data. This action cannot be undone.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteGroup();
+
+              router.dismissAll();
+              router.replace("/(tabs)/chat");
+            } catch (error: any) {
+              Alert.alert(
+                "Unable to Delete",
+                error?.response?.data?.message ?? "Something went wrong.",
+              );
+            }
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScreenHeader
@@ -118,6 +149,16 @@ export default function GroupInfoScreen() {
         danger
         onPress={handleLeaveGroup}
       />
+
+      {role === "owner" && (
+        <MenuCard
+          icon={<Trash2 size={20} color={colors.light.emergency} />}
+          title="Delete Safety Circle"
+          subtitle="Permanently delete this Safety Circle"
+          danger
+          onPress={handleDeleteGroup}
+        />
+      )}
     </SafeAreaView>
   );
 }
