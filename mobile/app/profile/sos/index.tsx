@@ -203,7 +203,7 @@ export default function SOSSettingsScreen() {
             {
               icon: TestTube2,
               title: "Test SOS",
-              onPress: () => {},
+              onPress: () => router.push("/profile/sos/test"),
             },
             {
               icon: History,
