@@ -1,4 +1,5 @@
-import { router } from "expo-router";
+import { useCallback, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
 import {
   ChevronRight,
   LogOut,
@@ -8,16 +9,37 @@ import {
 } from "lucide-react-native";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useLocalSearchParams } from "expo-router";
+import { useSelector } from "react-redux";
 
 import ScreenHeader from "@/components/common/ScreenHeader";
 import colors from "@/constants/colors";
-import { leaveGroup } from "@/services/group.service";
+import { RootState } from "@/store";
+import { getMyGroup, leaveGroup } from "@/services/group.service";
 
 export default function GroupInfoScreen() {
-  const { role } = useLocalSearchParams<{
-    role: string;
-  }>();
+  const currentUserId = useSelector((state: RootState) => state.auth.user?.id);
+
+  const [role, setRole] = useState<string>("member");
+
+  const loadGroupInfo = async () => {
+    try {
+      const res = await getMyGroup();
+
+      const currentMember = res.data.members.find(
+        (member: { id: string; role: string }) => member.id === currentUserId,
+      );
+      setRole(currentMember?.role ?? "member");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadGroupInfo();
+    }, []),
+  );
+
   const handleLeaveGroup = () => {
     if (role === "owner") {
       Alert.alert(
@@ -80,12 +102,14 @@ export default function GroupInfoScreen() {
         onPress={() => router.push("/group/invite")}
       />
 
-      <MenuCard
-        icon={<UserCheck size={20} color={colors.light.primary} />}
-        title="Join Requests"
-        subtitle="Approve pending requests"
-        onPress={() => router.push("/group/join-requests")}
-      />
+      {role === "owner" && (
+        <MenuCard
+          icon={<UserCheck size={20} color={colors.light.primary} />}
+          title="Join Requests"
+          subtitle="Approve pending requests"
+          onPress={() => router.push("/group/join-requests")}
+        />
+      )}
 
       <MenuCard
         icon={<LogOut size={20} color={colors.light.emergency} />}
