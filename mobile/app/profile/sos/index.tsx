@@ -33,7 +33,6 @@ export default function SOSSettingsScreen() {
 
   const [flashlightBlink, setFlashlightBlink] = useState(false);
   const [vibration, setVibration] = useState(false);
-  const [silentSOS, setSilentSOS] = useState(false);
 
   const handleLiveLocationToggle = async (value: boolean) => {
     try {
@@ -80,6 +79,18 @@ export default function SOSSettingsScreen() {
       dispatch(setSOSSettings(updatedSettings));
     } catch (error) {
       console.log("Alert sound update failed", error);
+    }
+  };
+
+  const handleSilentSOSToggle = async (value: boolean) => {
+    try {
+      const updatedSettings = await sosSettingsService.update({
+        silentSOS: value,
+      });
+
+      dispatch(setSOSSettings(updatedSettings));
+    } catch (error) {
+      console.log("Silent SOS update failed", error);
     }
   };
 
@@ -146,8 +157,8 @@ export default function SOSSettingsScreen() {
               icon: EyeOff,
               title: "Silent SOS",
               showToggle: true,
-              toggleValue: silentSOS,
-              onToggleChange: setSilentSOS,
+              toggleValue: sosSettings.silentSOS,
+              onToggleChange: handleSilentSOSToggle,
             },
           ]}
         />
