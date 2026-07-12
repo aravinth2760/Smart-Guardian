@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { router } from "expo-router";
 import {
   Bell,
   Camera,
@@ -17,21 +17,40 @@ import {
   Timer,
   Video,
 } from "lucide-react-native";
+import { useDispatch, useSelector } from "react-redux";
 import { ScrollView } from "react-native";
 
 import ScreenContainer from "@/components/common/ScreenContainer";
 import ScreenHeader from "@/components/common/ScreenHeader";
 import SettingsSection from "@/components/common/SettingsSection";
-import { router } from "expo-router";
+import { sosSettingsService } from "@/services/sos-settings.service";
+import { RootState } from "@/store";
+import { setSOSSettings } from "@/store/slices/sosSettingsSlice";
+import { useState } from "react";
 
 export default function SOSSettingsScreen() {
-  const [liveLocation, setLiveLocation] = useState(false);
+  const dispatch = useDispatch();
+
+  const sosSettings = useSelector((state: RootState) => state.sosSettings);
+
   const [autoCall, setAutoCall] = useState(false);
   const [smsBackup, setSmsBackup] = useState(false);
   const [alertSound, setAlertSound] = useState(false);
   const [flashlightBlink, setFlashlightBlink] = useState(false);
   const [vibration, setVibration] = useState(false);
   const [silentSOS, setSilentSOS] = useState(false);
+
+  const handleLiveLocationToggle = async (value: boolean) => {
+    try {
+      const updatedSettings = await sosSettingsService.update({
+        liveLocation: value,
+      });
+
+      dispatch(setSOSSettings(updatedSettings));
+    } catch (error) {
+      console.log("Live location update failed", error);
+    }
+  };
 
   return (
     <ScreenContainer>
@@ -68,9 +87,10 @@ export default function SOSSettingsScreen() {
               icon: MapPin,
               title: "Live Location",
               showToggle: true,
-              toggleValue: liveLocation,
-              onToggleChange: setLiveLocation,
+              toggleValue: sosSettings.liveLocation,
+              onToggleChange: handleLiveLocationToggle,
             },
+
             {
               icon: Phone,
               title: "Auto Call Guardian",
