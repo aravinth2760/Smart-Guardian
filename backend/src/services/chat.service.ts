@@ -449,12 +449,11 @@ export const joinGroupService = async (userId: string, inviteCode: string) => {
     throw new Error("Already a group member");
   }
 
-  const existingRequest = await prisma.joinRequest.findUnique({
+  const existingRequest = await prisma.joinRequest.findFirst({
     where: {
-      chatId_userId: {
-        chatId: chat.id,
-        userId,
-      },
+      chatId: chat.id,
+      userId,
+      status: "pending",
     },
   });
 
@@ -521,9 +520,7 @@ export const approveJoinRequestService = async (
   const ownerGroup = await prisma.chatMember.findFirst({
     where: {
       userId: ownerId,
-
       role: "owner",
-
       chat: {
         type: "group",
       },
@@ -548,11 +545,20 @@ export const approveJoinRequestService = async (
     throw new Error("Invalid join request");
   }
 
-  if (request.status !== "pending") {
-    throw new Error("Request already processed");
+  const existingMember = await prisma.chatMember.findUnique({
+    where: {
+      chatId_userId: {
+        chatId: request.chatId,
+        userId: request.userId,
+      },
+    },
+  });
+
+  if (existingMember) {
+    throw new Error("User is already a group member");
   }
 
-  const result = await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx) => {
     await tx.chatMember.create({
       data: {
         chatId: request.chatId,
@@ -561,19 +567,16 @@ export const approveJoinRequestService = async (
       },
     });
 
-    return await tx.joinRequest.update({
+    await tx.joinRequest.delete({
       where: {
         id: requestId,
-      },
-
-      data: {
-        status: "approved",
-        respondedAt: new Date(),
       },
     });
   });
 
-  return result;
+  return {
+    message: "Join request approved successfully.",
+  };
 };
 
 export const rejectJoinRequestService = async (
@@ -583,9 +586,7 @@ export const rejectJoinRequestService = async (
   const ownerGroup = await prisma.chatMember.findFirst({
     where: {
       userId: ownerId,
-
       role: "owner",
-
       chat: {
         type: "group",
       },
@@ -610,22 +611,15 @@ export const rejectJoinRequestService = async (
     throw new Error("Invalid join request");
   }
 
-  if (request.status !== "pending") {
-    throw new Error("Request already processed");
-  }
-
-  const updated = await prisma.joinRequest.update({
+  await prisma.joinRequest.delete({
     where: {
       id: requestId,
     },
-
-    data: {
-      status: "rejected",
-      respondedAt: new Date(),
-    },
   });
 
-  return updated;
+  return {
+    message: "Join request rejected successfully.",
+  };
 };
 
 export const getGroupMembersService = async (userId: string) => {
