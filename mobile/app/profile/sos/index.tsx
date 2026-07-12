@@ -33,7 +33,6 @@ export default function SOSSettingsScreen() {
 
   const sosSettings = useSelector((state: RootState) => state.sosSettings);
 
-  const [autoCall, setAutoCall] = useState(false);
   const [smsBackup, setSmsBackup] = useState(false);
   const [alertSound, setAlertSound] = useState(false);
   const [flashlightBlink, setFlashlightBlink] = useState(false);
@@ -49,6 +48,18 @@ export default function SOSSettingsScreen() {
       dispatch(setSOSSettings(updatedSettings));
     } catch (error) {
       console.log("Live location update failed", error);
+    }
+  };
+
+  const handleAutoCallToggle = async (value: boolean) => {
+    try {
+      const updatedSettings = await sosSettingsService.update({
+        autoCall: value,
+      });
+
+      dispatch(setSOSSettings(updatedSettings));
+    } catch (error) {
+      console.log("Auto call update failed", error);
     }
   };
 
@@ -90,13 +101,12 @@ export default function SOSSettingsScreen() {
               toggleValue: sosSettings.liveLocation,
               onToggleChange: handleLiveLocationToggle,
             },
-
             {
-              icon: Phone,
-              title: "Auto Call Guardian",
+              icon: PhoneCall,
+              title: "Auto Call",
               showToggle: true,
-              toggleValue: autoCall,
-              onToggleChange: setAutoCall,
+              toggleValue: sosSettings.autoCall,
+              onToggleChange: handleAutoCallToggle,
             },
             {
               icon: Shield,
