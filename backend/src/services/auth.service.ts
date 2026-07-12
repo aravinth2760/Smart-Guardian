@@ -50,7 +50,6 @@ export const completeProfile = async (
     },
     select: {
       id: true,
-      familyId: true,
       phone: true,
       name: true,
       email: true,
