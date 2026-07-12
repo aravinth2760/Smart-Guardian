@@ -31,7 +31,6 @@ export default function SOSSettingsScreen() {
 
   const sosSettings = useSelector((state: RootState) => state.sosSettings);
 
-  const [flashlightBlink, setFlashlightBlink] = useState(false);
   const [vibration, setVibration] = useState(false);
 
   const handleLiveLocationToggle = async (value: boolean) => {
@@ -91,6 +90,18 @@ export default function SOSSettingsScreen() {
       dispatch(setSOSSettings(updatedSettings));
     } catch (error) {
       console.log("Silent SOS update failed", error);
+    }
+  };
+
+  const handleFlashlightBlinkToggle = async (value: boolean) => {
+    try {
+      const updatedSettings = await sosSettingsService.update({
+        flashlightBlink: value,
+      });
+
+      dispatch(setSOSSettings(updatedSettings));
+    } catch (error) {
+      console.log("Flashlight blink update failed", error);
     }
   };
 
@@ -170,8 +181,8 @@ export default function SOSSettingsScreen() {
               icon: Flashlight,
               title: "Flashlight Blink",
               showToggle: true,
-              toggleValue: flashlightBlink,
-              onToggleChange: setFlashlightBlink,
+              toggleValue: sosSettings.flashlightBlink,
+              onToggleChange: handleFlashlightBlinkToggle,
             },
             {
               icon: Smartphone,
