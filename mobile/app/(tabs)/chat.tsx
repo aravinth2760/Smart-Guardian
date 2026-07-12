@@ -66,7 +66,7 @@ export default function ChatScreen() {
   const loadGroup = async () => {
     try {
       const res = await getMyGroup();
-      setGroup(res);
+      setGroup(res.data);
     } catch (error) {
       setGroup(null);
     }
