@@ -8,9 +8,7 @@ import {
   History,
   MapPin,
   Mic,
-  Phone,
   PhoneCall,
-  Shield,
   Siren,
   Smartphone,
   TestTube2,
@@ -33,7 +31,6 @@ export default function SOSSettingsScreen() {
 
   const sosSettings = useSelector((state: RootState) => state.sosSettings);
 
-  const [alertSound, setAlertSound] = useState(false);
   const [flashlightBlink, setFlashlightBlink] = useState(false);
   const [vibration, setVibration] = useState(false);
   const [silentSOS, setSilentSOS] = useState(false);
@@ -71,6 +68,18 @@ export default function SOSSettingsScreen() {
       dispatch(setSOSSettings(updatedSettings));
     } catch (error) {
       console.log("SMS backup update failed", error);
+    }
+  };
+
+  const handleAlertSoundToggle = async (value: boolean) => {
+    try {
+      const updatedSettings = await sosSettingsService.update({
+        alertSound: value,
+      });
+
+      dispatch(setSOSSettings(updatedSettings));
+    } catch (error) {
+      console.log("Alert sound update failed", error);
     }
   };
 
@@ -130,8 +139,8 @@ export default function SOSSettingsScreen() {
               icon: Siren,
               title: "Alert Sound",
               showToggle: true,
-              toggleValue: alertSound,
-              onToggleChange: setAlertSound,
+              toggleValue: sosSettings.alertSound,
+              onToggleChange: handleAlertSoundToggle,
             },
             {
               icon: EyeOff,
