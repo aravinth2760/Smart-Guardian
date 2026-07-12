@@ -16,6 +16,7 @@ import ContactCard from "@/components/common/CantactCard";
 import SearchBar from "@/components/common/SearchBar";
 import { createPrivateChat } from "@/services/chat.service";
 import { useContacts } from "@/provider/ContactsProvider";
+import ScreenContainer from "@/components/common/ScreenContainer";
 
 export default function ContactScreen() {
   const { contacts, loaded } = useContacts();
@@ -59,11 +60,7 @@ export default function ContactScreen() {
   };
 
   if (!loaded) {
-    return (
-      <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.light.primary} />
-      </SafeAreaView>
-    );
+    return <ScreenContainer loading />;
   }
 
   return (
