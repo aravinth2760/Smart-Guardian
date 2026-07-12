@@ -1,17 +1,28 @@
+import { ActivityIndicator, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { StyleSheet } from "react-native";
 
 import colors from "@/constants/colors";
 
 type Props = {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   center?: boolean;
+  loading?: boolean;
 };
 
-export default function ScreenContainer({ children, center = false }: Props) {
+export default function ScreenContainer({
+  children,
+  center = false,
+  loading = false,
+}: Props) {
   return (
-    <SafeAreaView style={[styles.safeArea, center && styles.center]}>
-      {children}
+    <SafeAreaView
+      style={[styles.safeArea, (center || loading) && styles.center]}
+    >
+      {loading ? (
+        <ActivityIndicator size="large" color={colors.light.primary} />
+      ) : (
+        children
+      )}
     </SafeAreaView>
   );
 }

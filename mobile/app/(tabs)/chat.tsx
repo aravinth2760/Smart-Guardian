@@ -117,11 +117,7 @@ export default function ChatScreen() {
   }, [chats, search, currentUserId, getName]);
 
   if (!loaded) {
-    return (
-      <ScreenContainer center>
-        <ActivityIndicator size="large" color={colors.light.primary} />
-      </ScreenContainer>
-    );
+    return <ScreenContainer loading />;
   }
 
   return (
