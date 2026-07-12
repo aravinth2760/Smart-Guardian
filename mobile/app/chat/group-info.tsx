@@ -8,13 +8,26 @@ import {
 } from "lucide-react-native";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useLocalSearchParams } from "expo-router";
 
 import ScreenHeader from "@/components/common/ScreenHeader";
 import colors from "@/constants/colors";
 import { leaveGroup } from "@/services/group.service";
 
 export default function GroupInfoScreen() {
+  const { role } = useLocalSearchParams<{
+    role: string;
+  }>();
   const handleLeaveGroup = () => {
+    if (role === "owner") {
+      Alert.alert(
+        "Cannot Leave Safety Circle",
+        "You are the owner of this Safety Circle. Transfer ownership to another member before leaving.",
+      );
+
+      return;
+    }
+
     Alert.alert(
       "Leave Safety Circle",
       "Are you sure you want to leave this Safety Circle?",
@@ -34,7 +47,7 @@ export default function GroupInfoScreen() {
               router.replace("/(tabs)/chat");
             } catch (error: any) {
               Alert.alert(
-                "Unable to leave",
+                "Unable to Leave",
                 error?.response?.data?.message ?? "Something went wrong.",
               );
             }

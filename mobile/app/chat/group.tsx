@@ -31,6 +31,13 @@ type Message = {
   };
 };
 
+type GroupMember = {
+  id: string;
+  name: string | null;
+  phone: string;
+  role: "owner" | "manager" | "member";
+};
+
 export default function GroupChatScreen() {
   const currentUserId = useSelector((state: RootState) => state.auth.user?.id);
 
@@ -42,6 +49,7 @@ export default function GroupChatScreen() {
     id: string;
     name: string;
   } | null>(null);
+  const [role, setRole] = useState("member");
 
   const flatListRef = useRef<FlatList>(null);
 
@@ -96,6 +104,12 @@ export default function GroupChatScreen() {
   const loadGroup = async () => {
     try {
       const res = await getMyGroup();
+
+      const currentMember = (res.data.members as GroupMember[]).find(
+        (member) => member.id === currentUserId,
+      );
+      const myRole = currentMember?.role ?? "member";
+      setRole(myRole);
 
       setGroup(res.data);
 
@@ -172,7 +186,16 @@ export default function GroupChatScreen() {
             </View>
           </View>
 
-          <Pressable onPress={() => router.push("/chat/group-info")}>
+          <Pressable
+            onPress={() =>
+              router.push({
+                pathname: "/chat/group-info",
+                params: {
+                  role: role,
+                },
+              })
+            }
+          >
             <Info size={22} color={colors.light.text} />
           </Pressable>
         </View>
