@@ -33,7 +33,6 @@ export default function SOSSettingsScreen() {
 
   const sosSettings = useSelector((state: RootState) => state.sosSettings);
 
-  const [smsBackup, setSmsBackup] = useState(false);
   const [alertSound, setAlertSound] = useState(false);
   const [flashlightBlink, setFlashlightBlink] = useState(false);
   const [vibration, setVibration] = useState(false);
@@ -60,6 +59,18 @@ export default function SOSSettingsScreen() {
       dispatch(setSOSSettings(updatedSettings));
     } catch (error) {
       console.log("Auto call update failed", error);
+    }
+  };
+
+  const handleSmsBackupToggle = async (value: boolean) => {
+    try {
+      const updatedSettings = await sosSettingsService.update({
+        smsBackup: value,
+      });
+
+      dispatch(setSOSSettings(updatedSettings));
+    } catch (error) {
+      console.log("SMS backup update failed", error);
     }
   };
 
@@ -109,11 +120,11 @@ export default function SOSSettingsScreen() {
               onToggleChange: handleAutoCallToggle,
             },
             {
-              icon: Shield,
-              title: "Send SMS Backup",
+              icon: Smartphone,
+              title: "SMS Backup",
               showToggle: true,
-              toggleValue: smsBackup,
-              onToggleChange: setSmsBackup,
+              toggleValue: sosSettings.smsBackup,
+              onToggleChange: handleSmsBackupToggle,
             },
             {
               icon: Siren,
