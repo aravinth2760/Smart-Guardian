@@ -107,6 +107,7 @@ export const sendMessage = async (
 export const getUserChats = async (userId: string) => {
   return prisma.chat.findMany({
     where: {
+      type: "private",
       members: {
         some: {
           userId,
