@@ -8,10 +8,12 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
-import ScreenHeader from "@/components/common/ScreenHeader";
 import colors from "@/constants/colors";
+
+import ScreenContainer from "@/components/common/ScreenContainer";
+import ScreenHeader from "@/components/common/ScreenHeader";
+
 import {
   approveJoinRequest,
   getJoinRequests,
@@ -75,14 +77,16 @@ export default function JoinRequestsScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.loading}>
-        <ActivityIndicator size="large" color={colors.light.primary} />
-      </SafeAreaView>
+      <View style={styles.loading}>
+        <ScreenContainer>
+          <ActivityIndicator size="large" color={colors.light.primary} />
+        </ScreenContainer>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ScreenContainer>
       <ScreenHeader title="Join Requests" />
 
       <FlatList
@@ -124,17 +128,11 @@ export default function JoinRequestsScreen() {
           </View>
         )}
       />
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.light.background,
-    paddingHorizontal: 20,
-  },
-
   loading: {
     flex: 1,
     justifyContent: "center",

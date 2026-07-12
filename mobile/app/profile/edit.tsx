@@ -1,22 +1,27 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+
 import { ArrowLeft, Mail, User } from "lucide-react-native";
 import { router } from "expo-router";
-import { useDispatch } from "react-redux";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import colors from "@/constants/colors";
 
-import AppTextInput from "@/components/common/AppTextInput";
-import AppSelect from "@/components/common/AppSelect";
+import ScreenContainer from "@/components/common/ScreenContainer";
+import ScreenHeader from "@/components/common/ScreenHeader";
 import AppButton from "@/components/common/AppButton";
-import { Relationship } from "@/types/auth";
-import { validateProfile } from "@/utils/validation";
+import AppSelect from "@/components/common/AppSelect";
+import AppTextInput from "@/components/common/AppTextInput";
+
+import { RootState } from "@/store";
+import { setUser } from "@/store/slices/authSlice";
+
 import { updateProfile } from "@/api/auth.api";
 import { tokenService } from "@/services/token.service";
-import { setUser } from "@/store/slices/authSlice";
-import { RootState } from "@/store";
+
+import { Relationship } from "@/types/auth";
+
+import { validateProfile } from "@/utils/validation";
 
 export default function EditProfileScreen() {
   const dispatch = useDispatch();
@@ -102,15 +107,9 @@ export default function EditProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ScreenContainer>
       {/* HEADER */}
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()}>
-          <ArrowLeft size={24} color={colors.light.text} />
-        </Pressable>
-
-        <Text style={styles.headerTitle}>Edit Profile</Text>
-      </View>
+      <ScreenHeader title="Edit Profile" />
 
       <View style={styles.content}>
         {/* NAME */}
@@ -178,35 +177,14 @@ export default function EditProfileScreen() {
           />
         </View>
       </View>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.light.background,
-  },
-
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 18,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.light.cardBorder,
-  },
-
-  headerTitle: {
-    marginLeft: 16,
-    fontSize: 22,
-    fontWeight: "700",
-    color: colors.light.text,
-  },
-
   content: {
     flex: 1,
-    padding: 24,
+    paddingHorizontal: 12,
   },
 
   label: {

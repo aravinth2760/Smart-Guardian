@@ -1,26 +1,10 @@
-import colors from "@/constants/colors";
-import { StyleSheet, Text } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import ScreenContainer from "@/components/common/ScreenContainer";
+import ScreenHeader from "@/components/common/ScreenHeader";
 
 export default function SafetyScreen() {
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.sectionTitle}>Safety Screen</Text>
-    </SafeAreaView>
+    <ScreenContainer>
+      <ScreenHeader title="Safety Screen" showBack={false} />
+    </ScreenContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.light.background,
-  },
-
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: colors.light.text,
-    marginBottom: 12,
-    marginTop: 20,
-  },
-});

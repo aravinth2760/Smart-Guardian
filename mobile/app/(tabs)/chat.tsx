@@ -1,23 +1,25 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import {
   ActivityIndicator,
   FlatList,
   StyleSheet,
   Text,
   View,
+  StatusBar,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useFocusEffect } from "expo-router";
-import { useSelector } from "react-redux";
 
-import { getChats } from "@/services/chat.service";
-import { useContacts } from "@/provider/ContactsProvider";
-import { RootState } from "@/store";
+import ChatCard from "@/components/chat/ChatCard";
+import FloatingButton from "@/components/chat/FloatingButton";
+import SearchBar from "@/components/common/SearchBar";
+import ScreenContainer from "@/components/common/ScreenContainer";
+import ScreenHeader from "@/components/common/ScreenHeader";
 
 import colors from "@/constants/colors";
-import ChatCard from "@/components/chat/ChatCard";
-import SearchBar from "@/components/common/SearchBar";
-import FloatingButton from "@/components/chat/FloatingButton";
+import { useContacts } from "@/provider/ContactsProvider";
+import { RootState } from "@/store";
+import { getChats } from "@/services/chat.service";
 import { getMyGroup } from "@/services/group.service";
 
 type Chat = {
@@ -116,17 +118,15 @@ export default function ChatScreen() {
 
   if (!loaded) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
+      <ScreenContainer>
         <ActivityIndicator size="large" color={colors.light.primary} />
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Chats</Text>
-      </View>
+    <ScreenContainer>
+      <ScreenHeader title="Chat" showBack={false} />
 
       <View style={{ marginBottom: 16 }}>
         <SearchBar value={search} onChangeText={setSearch} />
@@ -165,7 +165,7 @@ export default function ChatScreen() {
         data={filteredChats}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={{ marginTop: StatusBar.currentHeight || 0 }}
         renderItem={({ item }) => {
           const otherUser = item.members.find(
             (member) => member.user.id !== currentUserId,
@@ -173,7 +173,7 @@ export default function ChatScreen() {
 
           const displayName = getName(
             otherUser?.phone,
-            otherUser?.name ?? "Unknown",
+            otherUser?.name ?? otherUser?.phone,
           );
 
           return (
@@ -215,33 +215,11 @@ export default function ChatScreen() {
       />
 
       <FloatingButton onPress={() => router.push("/contacts")} />
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.light.background,
-    paddingHorizontal: 10,
-  },
-
-  header: {
-    marginBottom: 10,
-  },
-
-  title: {
-    fontSize: 24,
-    fontWeight: "600",
-    color: colors.light.text,
-    marginBottom: 2,
-  },
-
-  list: {
-    paddingTop: 8,
-    paddingBottom: 100,
-  },
-
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
@@ -262,12 +240,5 @@ const styles = StyleSheet.create({
     color: colors.light.textSecondary,
     textAlign: "center",
     lineHeight: 22,
-  },
-
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: colors.light.background,
   },
 });

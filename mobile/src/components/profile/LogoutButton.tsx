@@ -1,12 +1,15 @@
 import { Alert, Pressable, StyleSheet, Text } from "react-native";
+
 import { LogOut } from "lucide-react-native";
 import { router } from "expo-router";
 import { useDispatch } from "react-redux";
 
 import colors from "@/constants/colors";
+
 import { logout } from "@/store/slices/authSlice";
-import { tokenService } from "@/services/token.service";
+
 import { socket } from "@/services/socket";
+import { tokenService } from "@/services/token.service";
 
 export default function LogoutButton() {
   const dispatch = useDispatch();
@@ -43,7 +46,6 @@ const styles = StyleSheet.create({
   left: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 24,
   },
 
   logoutText: {

@@ -78,15 +78,16 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 10,
+    paddingVertical: 3,
   },
 
   safetyContainer: {
     borderWidth: 1,
     borderColor: colors.light.cardBorder,
     borderRadius: 18,
-    padding: 10,
-    marginBottom: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    marginBottom: 15,
   },
 
   avatar: {

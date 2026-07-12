@@ -1,23 +1,29 @@
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
+  Pressable,
+  RefreshControl,
   StyleSheet,
   Text,
   View,
-  Alert,
-  Pressable,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+
 import { useSelector } from "react-redux";
-import { RootState } from "@/store";
-import { router } from "expo-router";
-import { ArrowLeft } from "lucide-react-native";
-import { RefreshControl } from "react-native";
 
 import colors from "@/constants/colors";
-import { getGroupMembers } from "@/services/group.service";
-import { removeGroupMember, transferOwner } from "@/services/group.service";
+
+import ScreenContainer from "@/components/common/ScreenContainer";
+import ScreenHeader from "@/components/common/ScreenHeader";
+
+import { RootState } from "@/store";
+
+import {
+  getGroupMembers,
+  removeGroupMember,
+  transferOwner,
+} from "@/services/group.service";
 
 type Member = {
   id: string;
@@ -104,23 +110,15 @@ export default function MembersScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.loading}>
+      <ScreenContainer>
         <ActivityIndicator size="large" color={colors.light.primary} />
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()}>
-          <ArrowLeft size={24} color={colors.light.text} />
-        </Pressable>
-
-        <Text style={styles.title}>Members</Text>
-
-        <View style={{ width: 24 }} />
-      </View>
+    <ScreenContainer>
+      <ScreenHeader title="Members" />
       <FlatList
         data={members}
         keyExtractor={(item) => item.id}
@@ -192,7 +190,7 @@ export default function MembersScreen() {
           );
         }}
       />
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

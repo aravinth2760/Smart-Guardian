@@ -1,16 +1,13 @@
-import { ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
-import {
-  ArrowLeft,
-  Crown,
-  UserRound,
-  MessageCircle,
-} from "lucide-react-native";
+import { useState } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+
+import { Crown, MessageCircle, UserRound } from "lucide-react-native";
 
 import colors from "@/constants/colors";
+
 import AppButton from "@/components/common/AppButton";
-import { useState } from "react";
+import ScreenContainer from "@/components/common/ScreenContainer";
+import ScreenHeader from "@/components/common/ScreenHeader";
 
 const members = [
   {
@@ -60,15 +57,9 @@ const members = [
 export default function FamilyMembersScreen() {
   const [loading, setLoading] = useState(false);
   return (
-    <SafeAreaView style={styles.container}>
+    <ScreenContainer>
       {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()}>
-          <ArrowLeft size={24} color={colors.light.text} />
-        </Pressable>
-
-        <Text style={styles.headerTitle}>Family Members</Text>
-      </View>
+      <ScreenHeader title="Family Members" />
 
       <View style={styles.content}>
         <Text style={styles.description}>
@@ -133,35 +124,13 @@ export default function FamilyMembersScreen() {
           loading={loading}
         />
       </View>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.light.background,
-  },
-
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 18,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.light.cardBorder,
-  },
-
-  headerTitle: {
-    marginLeft: 16,
-    fontSize: 22,
-    fontWeight: "700",
-    color: colors.light.text,
-  },
-
   content: {
     flex: 1,
-    padding: 24,
   },
 
   description: {

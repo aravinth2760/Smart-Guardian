@@ -1,4 +1,3 @@
-import * as Clipboard from "expo-clipboard";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -9,10 +8,14 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
-import ScreenHeader from "@/components/common/ScreenHeader";
+import * as Clipboard from "expo-clipboard";
+
 import colors from "@/constants/colors";
+
+import ScreenContainer from "@/components/common/ScreenContainer";
+import ScreenHeader from "@/components/common/ScreenHeader";
+
 import {
   disableInvite,
   enableInvite,
@@ -97,24 +100,26 @@ export default function InviteScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.loading}>
+      <ScreenContainer>
         <ActivityIndicator size="large" color={colors.light.primary} />
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   if (!group) {
     return (
-      <SafeAreaView style={styles.loading}>
-        <Text>Unable to load group.</Text>
-      </SafeAreaView>
+      <View style={styles.loading}>
+        <ScreenContainer>
+          <Text>Unable to load group.</Text>
+        </ScreenContainer>
+      </View>
     );
   }
 
   const isOwnerOrManager = group.role === "owner" || group.role === "manager";
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ScreenContainer>
       <ScreenHeader title="Invite Settings" />
 
       <View style={styles.card}>
@@ -151,17 +156,11 @@ export default function InviteScreen() {
           </>
         )}
       </View>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.light.background,
-    paddingHorizontal: 20,
-  },
-
   loading: {
     flex: 1,
     justifyContent: "center",

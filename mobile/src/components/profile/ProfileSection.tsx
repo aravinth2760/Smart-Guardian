@@ -39,11 +39,10 @@ export default function ProfileSection({ title, items }: ProfileSectionProps) {
 
 const styles = StyleSheet.create({
   section: {
-    marginBottom: 20,
+    marginVertical: 15,
   },
 
   sectionTitle: {
-    paddingHorizontal: 24,
     marginBottom: 10,
     fontSize: 12,
     fontWeight: "700",
@@ -55,7 +54,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 24,
     paddingVertical: 12,
   },
 

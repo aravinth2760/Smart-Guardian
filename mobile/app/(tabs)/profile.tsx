@@ -1,22 +1,20 @@
-import { ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
+import { router } from "expo-router";
+import { ScrollView, StyleSheet } from "react-native";
 import {
-  User,
-  Shield,
-  Users,
-  MapPin,
   Bell,
-  Globe,
   CircleHelp,
   FileText,
-  LogOut,
+  Globe,
+  MapPin,
+  Shield,
+  User,
+  Users,
 } from "lucide-react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
 
-import colors from "@/constants/colors";
+import LogoutButton from "@/components/profile/LogoutButton";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileSection from "@/components/profile/ProfileSection";
-import LogoutButton from "@/components/profile/LogoutButton";
+import ScreenContainer from "@/components/common/ScreenContainer";
 
 const accountItems = [
   {
@@ -91,7 +89,7 @@ const supportItems = [
 
 export default function ProfileScreen() {
   return (
-    <SafeAreaView style={styles.container}>
+    <ScreenContainer>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
@@ -108,25 +106,12 @@ export default function ProfileScreen() {
 
         <LogoutButton />
       </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.light.background,
-  },
-
   content: {
     paddingBottom: 40,
-  },
-
-  logout: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 18,
-    marginTop: 8,
   },
 });

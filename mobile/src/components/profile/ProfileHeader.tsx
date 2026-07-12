@@ -1,19 +1,18 @@
-import { StyleSheet, Text, View } from "react-native";
 import { ShieldCheck, UserRound } from "lucide-react-native";
+import { StyleSheet, Text, View } from "react-native";
 
+import ScreenHeader from "@/components/common/ScreenHeader";
 import colors from "@/constants/colors";
 
 export default function ProfileHeader() {
   return (
     <View>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.heading}>Profile</Text>
-
-        <Text style={styles.subHeading}>
-          Manage your account and family safety.
-        </Text>
-      </View>
+      <ScreenHeader
+        title="Profile"
+        subtitle="Manage your account and family safety."
+        showBack={false}
+      />
 
       {/* User Info */}
       <View style={styles.profileContainer}>
@@ -46,28 +45,10 @@ export default function ProfileHeader() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
-
-  heading: {
-    fontSize: 24,
-    fontWeight: "600",
-    color: colors.light.text,
-    marginBottom: 2,
-  },
-
-  subHeading: {
-    fontSize: 14,
-    color: colors.light.textSecondary,
-  },
-
   profileContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 30,
+    paddingVertical: 10,
   },
 
   avatar: {
