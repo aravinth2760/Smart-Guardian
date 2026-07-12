@@ -24,34 +24,27 @@ import {
 
 const router = Router();
 
+// Private Chat
 router.post("/private", authenticate, createPrivateChat);
-
 router.post("/message", authenticate, createMessage);
-
 router.get("/", authenticate, getChats);
 
-router.get("/:chatId/messages", authenticate, getChatMessages);
-
+// Group
 router.post("/group", authenticate, createGroup);
-
 router.get("/group", authenticate, getMyGroup);
 
 router.post("/group/invite/enable", authenticate, enableInvite);
-
 router.post("/group/invite/disable", authenticate, disableInvite);
-
 router.post("/group/invite/regenerate", authenticate, regenerateInviteCode);
 
 router.post("/group/join", authenticate, joinGroup);
 
 router.get("/group/join-requests", authenticate, getJoinRequests);
-
 router.post(
   "/group/join-requests/:requestId/approve",
   authenticate,
   approveJoinRequest,
 );
-
 router.post(
   "/group/join-requests/:requestId/reject",
   authenticate,
@@ -59,15 +52,15 @@ router.post(
 );
 
 router.get("/group/members", authenticate, getGroupMembers);
-
 router.delete("/group/members/:userId", authenticate, removeGroupMember);
 
 router.post("/group/transfer-owner", authenticate, transferOwner);
-
 router.post("/group/leave", authenticate, leaveGroup);
 
 router.get("/group/messages", authenticate, getGroupMessages);
-
 router.post("/group/message", authenticate, sendGroupMessage);
+
+// Keep parameterized routes at the end
+router.get("/:chatId/messages", authenticate, getChatMessages);
 
 export default router;
