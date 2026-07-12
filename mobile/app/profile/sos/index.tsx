@@ -50,7 +50,7 @@ export default function SOSSettingsScreen() {
               icon: Clock3,
               title: "Countdown",
               value: "5 sec",
-              onPress: () => {},
+              onPress: () => router.push("/profile/sos/countdown"),
             },
             {
               icon: Timer,
