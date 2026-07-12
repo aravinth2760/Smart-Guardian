@@ -43,6 +43,15 @@ type Group = {
   inviteEnabled: boolean;
   inviteCode: string | null;
   role: "owner" | "manager" | "member";
+  lastMessage?: {
+    id: string;
+    text: string;
+    createdAt: string;
+    sender: {
+      id: string;
+      name: string | null;
+    };
+  } | null;
 };
 
 export default function ChatScreen() {
@@ -127,10 +136,21 @@ export default function ChatScreen() {
         name={group ? group.name : "Create Safety Circle"}
         message={
           group
-            ? "Stay connected with your trusted family."
+            ? group.lastMessage
+              ? group.lastMessage.sender.id === currentUserId
+                ? `You: ${group.lastMessage.text}`
+                : `${group.lastMessage.sender.name}: ${group.lastMessage.text}`
+              : "Stay connected with your trusted family."
             : "Create your Safety Circle to start chatting."
         }
-        time=""
+        time={
+          group?.lastMessage
+            ? new Date(group.lastMessage.createdAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : ""
+        }
         isSafetyCircle
         onPress={() => {
           if (group) {
