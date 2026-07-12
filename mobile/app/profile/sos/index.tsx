@@ -56,7 +56,7 @@ export default function SOSSettingsScreen() {
               icon: Timer,
               title: "Location Sharing Duration",
               value: "30 mins",
-              onPress: () => {},
+              onPress: () => router.push("/profile/sos/live-location-duration"),
             },
           ]}
         />

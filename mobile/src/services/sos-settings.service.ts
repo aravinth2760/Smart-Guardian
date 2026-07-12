@@ -6,6 +6,7 @@ export interface SOSSettings {
   message: string;
   countdown: number;
   liveLocation: boolean;
+  liveLocationDuration: number;
   autoCall: boolean;
   smsBackup: boolean;
   alertSound: boolean;
@@ -20,6 +21,7 @@ export const defaultSOSSettings: SOSSettings = {
 
   countdown: 5,
   liveLocation: true,
+  liveLocationDuration: 30,
   autoCall: true,
   smsBackup: true,
   alertSound: false,
