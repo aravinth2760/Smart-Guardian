@@ -118,7 +118,7 @@ export default function ChatScreen() {
 
   if (!loaded) {
     return (
-      <ScreenContainer>
+      <ScreenContainer center>
         <ActivityIndicator size="large" color={colors.light.primary} />
       </ScreenContainer>
     );
@@ -226,6 +226,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 80,
     paddingHorizontal: 20,
+  },
+
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.light.background,
   },
 
   emptyTitle: {
