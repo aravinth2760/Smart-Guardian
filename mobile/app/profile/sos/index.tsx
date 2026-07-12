@@ -208,7 +208,7 @@ export default function SOSSettingsScreen() {
             {
               icon: History,
               title: "SOS History",
-              onPress: () => {},
+              onPress: () => router.push("/profile/sos/history"),
             },
           ]}
         />
