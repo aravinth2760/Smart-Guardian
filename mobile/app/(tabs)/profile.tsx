@@ -40,7 +40,7 @@ const safetyItems = [
   {
     icon: Shield,
     title: "SOS Settings",
-    onPress: () => router.push("/profile/sos-settings"),
+    onPress: () => router.push("/profile/sos"),
   },
   {
     icon: MapPin,
