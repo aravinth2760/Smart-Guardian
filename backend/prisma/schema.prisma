@@ -7,20 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Family {
-  id String @id @default(cuid())
-
-  name String
-
-  familyCode String @unique
-
-  users User[]
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-}
-
 enum Relationship {
   father
   mother
@@ -69,10 +55,6 @@ model User {
 
   profileCompleted Boolean @default(false)
 
-  familyId String?
-
-  family Family? @relation(fields: [familyId], references: [id], onDelete: SetNull)
-
   refreshToken RefreshToken?
 
   createdChats Chat[] @relation("CreatedChats")
@@ -86,8 +68,6 @@ model User {
   createdAt DateTime @default(now())
 
   updatedAt DateTime @updatedAt
-
-  @@index([familyId])
 }
 
 model RefreshToken {
@@ -118,17 +98,15 @@ model Chat {
 
   name String @default("Safety Circle")
 
-  // Private chat only
   privateKey String? @unique
 
-  // Group invite
   inviteCode String? @unique
 
   inviteEnabled Boolean @default(false)
 
   createdById String
 
-  createdBy User @relation("CreatedChats", fields: [createdById], references: [id], onDelete: Cascade)
+  createdBy User @relation(name: "CreatedChats", fields: [createdById], references: [id], onDelete: Cascade)
 
   members ChatMember[]
 
@@ -197,7 +175,7 @@ model Message {
 
   chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
-  sender User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  sender User @relation(name: "SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
