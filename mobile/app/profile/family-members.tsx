@@ -1,128 +1,147 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-
+import { useRouter } from "expo-router";
+import { useSelector } from "react-redux";
 import { Crown, MessageCircle, UserRound } from "lucide-react-native";
 
+import { RootState } from "@/store";
 import colors from "@/constants/colors";
 
 import AppButton from "@/components/common/AppButton";
 import ScreenContainer from "@/components/common/ScreenContainer";
 import ScreenHeader from "@/components/common/ScreenHeader";
+import { getGroupMembers } from "@/services/group.service";
 
-const members = [
-  {
-    id: "1",
-    name: "Aravinth",
-    relationship: "Parent (Admin)",
-    admin: true,
-  },
-  {
-    id: "2",
-    name: "Lakshmi",
-    relationship: "Mother",
-    admin: false,
-  },
-  {
-    id: "3",
-    name: "Rahul",
-    relationship: "Brother",
-    admin: false,
-  },
-  {
-    id: "4",
-    name: "Priya",
-    relationship: "Sister",
-    admin: false,
-  },
-  {
-    id: "5",
-    name: "Suresh",
-    relationship: "Grandfather",
-    admin: false,
-  },
-  {
-    id: "6",
-    name: "Meena",
-    relationship: "Grandmother",
-    admin: false,
-  },
-  {
-    id: "7",
-    name: "Karthik",
-    relationship: "Guardian",
-    admin: false,
-  },
-];
+type Member = {
+  id: string;
+  name: string;
+  relationship: string;
+  role: "owner" | "manager" | "member";
+};
 
-export default function FamilyMembersScreen() {
-  const [loading, setLoading] = useState(false);
+export default function MembersScreen() {
+  const router = useRouter();
+
+  const [members, setMembers] = useState<Member[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const currentUserId = useSelector((state: RootState) => state.auth.user?.id);
+
+  useEffect(() => {
+    void loadMembers();
+  }, []);
+
+  const loadMembers = async () => {
+    try {
+      const res = await getGroupMembers();
+      setMembers(res.data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <ScreenContainer loading />;
+  }
+
   return (
     <ScreenContainer>
-      {/* Header */}
       <ScreenHeader title="Family Members" />
 
       <View style={styles.content}>
-        <Text style={styles.description}>
-          These members belong to your family group. SOS alerts and live
-          location are automatically shared with everyone in this group.
-        </Text>
+        {members.length > 0 ? (
+          <>
+            <Text style={styles.description}>
+              These guardians belong to your Safety Circle. SOS alerts and live
+              location are automatically shared with everyone in this group.
+            </Text>
 
-        {/* Family Group */}
-        <View style={styles.groupContainer}>
-          <Text style={styles.groupTitle}>Family Group</Text>
+            <View style={styles.groupContainer}>
+              <Text style={styles.groupTitle}>Safety Circle</Text>
 
-          <ScrollView
-            style={styles.memberList}
-            showsVerticalScrollIndicator={false}
-          >
-            {members.map((member, index) => (
-              <View
-                key={member.id}
-                style={[
-                  styles.memberRow,
-                  index === members.length - 1 && {
-                    borderBottomWidth: 0,
-                  },
-                ]}
+              <ScrollView
+                style={styles.memberList}
+                showsVerticalScrollIndicator={false}
               >
-                <View style={styles.left}>
-                  <View style={styles.avatar}>
-                    {member.admin ? (
-                      <Crown size={20} color="#F59E0B" />
-                    ) : (
-                      <UserRound size={20} color={colors.light.primary} />
-                    )}
+                {members.map((member, index) => (
+                  <View
+                    key={member.id}
+                    style={[
+                      styles.memberRow,
+                      index === members.length - 1 && {
+                        borderBottomWidth: 0,
+                      },
+                    ]}
+                  >
+                    <View style={styles.left}>
+                      <View style={styles.avatar}>
+                        {member.role === "owner" ? (
+                          <Crown size={20} color="#F59E0B" />
+                        ) : (
+                          <UserRound size={20} color={colors.light.primary} />
+                        )}
+                      </View>
+
+                      <View>
+                        <Text style={styles.name}>
+                          {member.name}
+                          {member.id === currentUserId ? " (You)" : ""}
+                        </Text>
+
+                        <Text style={styles.relationship}>
+                          {member.role === "owner"
+                            ? "Admin"
+                            : member.relationship}
+                        </Text>
+                      </View>
+                    </View>
                   </View>
+                ))}
+              </ScrollView>
+            </View>
 
-                  <View>
-                    <Text style={styles.name}>{member.name}</Text>
+            <View style={styles.infoCard}>
+              <Text style={styles.infoText}>
+                Family members can only be managed from the Safety Circle in the
+                Chat tab. Adding or removing members there automatically updates
+                this list.
+              </Text>
+            </View>
 
-                    <Text style={styles.relationship}>
-                      {member.relationship}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
+            <AppButton
+              title="Open Safety Circle"
+              Icon={MessageCircle}
+              onPress={() => router.push("/chat/group")}
+            />
+          </>
+        ) : (
+          <>
+            <Text style={styles.description}>
+              No Safety Circle has been created yet.
+            </Text>
 
-        {/* Info */}
-        <View style={styles.infoCard}>
-          <Text style={styles.infoText}>
-            Family members can only be managed from the Family Group in the Chat
-            tab. Adding or removing members there automatically updates this
-            list.
-          </Text>
-        </View>
+            <View style={styles.infoCard}>
+              <Text style={styles.infoText}>
+                Create or join your Safety Circle from the Chat tab. Once
+                available, all guardians will appear here automatically.
+              </Text>
+            </View>
 
-        {/* Button */}
-        <AppButton
-          title="Open Family Group"
-          Icon={MessageCircle}
-          onPress={() => {}}
-          loading={loading}
-        />
+            <AppButton
+              title="Open Chat"
+              Icon={MessageCircle}
+              onPress={() => {
+                if (members.length > 0) {
+                  router.push("/chat/group");
+                } else {
+                  router.push("/group/setup");
+                }
+              }}
+            />
+          </>
+        )}
       </View>
     </ScreenContainer>
   );
