@@ -1,4 +1,7 @@
+// React
 import { useState } from "react";
+
+// React Native
 import {
   ActivityIndicator,
   Alert,
@@ -9,11 +12,19 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+// Third-party
 import { router } from "expo-router";
 
+// Constants
 import colors from "@/constants/colors";
-import ScreenHeader from "@/components/common/ScreenHeader";
+import { ROUTES } from "@/constants/routes";
+
+// Services
 import { createGroup, joinGroup } from "@/services/group.service";
+
+// Components
+import ScreenHeader from "@/components/common/ScreenHeader";
 
 export default function SafetyCircleScreen() {
   const [inviteCode, setInviteCode] = useState("");
@@ -28,7 +39,7 @@ export default function SafetyCircleScreen() {
 
       Alert.alert("Success", "Your Safety Circle has been created.");
 
-      router.replace("/chat/group");
+      router.replace(ROUTES.CHAT.GROUP.INDEX);
     } catch (err: any) {
       Alert.alert(
         "Error",

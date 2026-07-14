@@ -1,4 +1,7 @@
+// React
 import { useCallback, useEffect, useRef, useState } from "react";
+
+// React Native
 import {
   ActivityIndicator,
   FlatList,
@@ -11,15 +14,23 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useSelector } from "react-redux";
-import { ArrowLeft, Info, Users } from "lucide-react-native";
-import { router, useFocusEffect } from "expo-router";
 
+// Third-party
+import { router, useFocusEffect } from "expo-router";
+import { ArrowLeft, Info, Users } from "lucide-react-native";
+import { useSelector } from "react-redux";
+
+// Constants
 import colors from "@/constants/colors";
-import { RootState } from "@/store";
-import { socket } from "@/services/socket";
+import { ROUTES } from "@/constants/routes";
+
+// Services
 import { getGroupMessages, sendGroupMessage } from "@/services/chat.service";
 import { getMyGroup } from "@/services/group.service";
+import { socket } from "@/services/socket";
+
+// Types
+import type { RootState } from "@/store";
 
 type Message = {
   id: string;
@@ -189,7 +200,7 @@ export default function GroupChatScreen() {
           <Pressable
             onPress={() =>
               router.push({
-                pathname: "/chat/group-info",
+                pathname: ROUTES.CHAT.GROUP.INFO.INDEX,
                 params: {
                   role: role,
                 },

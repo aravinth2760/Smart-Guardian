@@ -1,22 +1,28 @@
+// React
 import { useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+
+// React Native
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+// Third-party
 import { router } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 
+// Constants
 import colors from "@/constants/colors";
-import ContactCard from "@/components/common/CantactCard";
-import SearchBar from "@/components/common/SearchBar";
-import { createPrivateChat } from "@/services/chat.service";
+import { ROUTES } from "@/constants/routes";
+
+// Providers
 import { useContacts } from "@/provider/ContactsProvider";
+
+// Services
+import { createPrivateChat } from "@/services/chat.service";
+
+// Components
+import ContactCard from "@/components/common/CantactCard";
 import ScreenContainer from "@/components/common/ScreenContainer";
+import SearchBar from "@/components/common/SearchBar";
 
 export default function ContactScreen() {
   const { contacts, loaded } = useContacts();
@@ -43,17 +49,9 @@ export default function ContactScreen() {
 
     try {
       const response = await createPrivateChat(item.userId);
-
       const chat = response.data.data;
 
-      router.push({
-        pathname: "/chat/[chatId]",
-        params: {
-          chatId: chat.id,
-          name: item.name,
-          phone: item.phone,
-        },
-      });
+      router.push(ROUTES.CHAT.ROOM(chat.id, item.name, item.phone));
     } catch (error) {
       console.log("Create chat error:", error);
     }

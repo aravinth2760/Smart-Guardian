@@ -1,4 +1,7 @@
+// React
 import { useEffect, useState } from "react";
+
+// React Native
 import {
   ActivityIndicator,
   Alert,
@@ -9,19 +12,23 @@ import {
   View,
 } from "react-native";
 
+// Third-party
 import * as Clipboard from "expo-clipboard";
 
+// Constants
 import colors from "@/constants/colors";
 
-import ScreenContainer from "@/components/common/ScreenContainer";
-import ScreenHeader from "@/components/common/ScreenHeader";
-
+// Services
 import {
   disableInvite,
   enableInvite,
   getMyGroup,
   regenerateInvite,
 } from "@/services/group.service";
+
+// Components
+import ScreenContainer from "@/components/common/ScreenContainer";
+import ScreenHeader from "@/components/common/ScreenHeader";
 
 type Group = {
   id: string;

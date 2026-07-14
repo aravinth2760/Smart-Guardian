@@ -1,4 +1,7 @@
+// React
 import { useEffect, useState } from "react";
+
+// React Native
 import {
   ActivityIndicator,
   Alert,
@@ -9,16 +12,19 @@ import {
   View,
 } from "react-native";
 
+// Constants
 import colors from "@/constants/colors";
 
-import ScreenContainer from "@/components/common/ScreenContainer";
-import ScreenHeader from "@/components/common/ScreenHeader";
-
+// Services
 import {
   approveJoinRequest,
   getJoinRequests,
   rejectJoinRequest,
 } from "@/services/group.service";
+
+// Components
+import ScreenContainer from "@/components/common/ScreenContainer";
+import ScreenHeader from "@/components/common/ScreenHeader";
 
 type JoinRequest = {
   id: string;

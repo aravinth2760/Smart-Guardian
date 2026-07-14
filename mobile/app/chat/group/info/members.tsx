@@ -1,4 +1,7 @@
+// React
 import { useEffect, useState } from "react";
+
+// React Native
 import {
   ActivityIndicator,
   Alert,
@@ -10,20 +13,25 @@ import {
   View,
 } from "react-native";
 
+// Third-party
 import { useSelector } from "react-redux";
 
+// Constants
 import colors from "@/constants/colors";
 
-import ScreenContainer from "@/components/common/ScreenContainer";
-import ScreenHeader from "@/components/common/ScreenHeader";
-
-import { RootState } from "@/store";
-
+// Services
 import {
   getGroupMembers,
   removeGroupMember,
   transferOwner,
 } from "@/services/group.service";
+
+// Components
+import ScreenContainer from "@/components/common/ScreenContainer";
+import ScreenHeader from "@/components/common/ScreenHeader";
+
+// Types
+import type { RootState } from "@/store";
 
 type Member = {
   id: string;

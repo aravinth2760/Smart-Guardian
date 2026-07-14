@@ -1,4 +1,11 @@
+// React
 import { useCallback, useState } from "react";
+
+// React Native
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+// Third-party
 import { router, useFocusEffect } from "expo-router";
 import {
   ChevronRight,
@@ -8,14 +15,20 @@ import {
   UserCheck,
   Users,
 } from "lucide-react-native";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 
-import ScreenHeader from "@/components/common/ScreenHeader";
+// Constants
 import colors from "@/constants/colors";
-import { RootState } from "@/store";
-import { getMyGroup, leaveGroup, deleteGroup } from "@/services/group.service";
+import { ROUTES } from "@/constants/routes";
+
+// Services
+import { deleteGroup, getMyGroup, leaveGroup } from "@/services/group.service";
+
+// Components
+import ScreenHeader from "@/components/common/ScreenHeader";
+
+// Types
+import type { RootState } from "@/store";
 
 export default function GroupInfoScreen() {
   const currentUserId = useSelector((state: RootState) => state.auth.user?.id);
@@ -67,7 +80,7 @@ export default function GroupInfoScreen() {
               await leaveGroup();
 
               router.dismissAll();
-              router.replace("/(tabs)/chat");
+              router.replace(ROUTES.TABS.CHAT);
             } catch (error: any) {
               Alert.alert(
                 "Unable to Leave",
@@ -97,7 +110,7 @@ export default function GroupInfoScreen() {
               await deleteGroup();
 
               router.dismissAll();
-              router.replace("/(tabs)/chat");
+              router.replace(ROUTES.TABS.CHAT);
             } catch (error: any) {
               Alert.alert(
                 "Unable to Delete",
@@ -123,14 +136,14 @@ export default function GroupInfoScreen() {
         icon={<Users size={20} color={colors.light.primary} />}
         title="Members"
         subtitle="View and manage members"
-        onPress={() => router.push("/group/members")}
+        onPress={() => router.push(ROUTES.CHAT.GROUP.INFO.MEMBERS)}
       />
 
       <MenuCard
         icon={<Shield size={20} color={colors.light.primary} />}
         title="Invite Settings"
         subtitle="Manage invite code"
-        onPress={() => router.push("/group/invite")}
+        onPress={() => router.push(ROUTES.CHAT.GROUP.INFO.INVITE)}
       />
 
       {role === "owner" && (
@@ -138,7 +151,7 @@ export default function GroupInfoScreen() {
           icon={<UserCheck size={20} color={colors.light.primary} />}
           title="Join Requests"
           subtitle="Approve pending requests"
-          onPress={() => router.push("/group/join-requests")}
+          onPress={() => router.push(ROUTES.CHAT.GROUP.INFO.JOIN_REQUESTS)}
         />
       )}
 
