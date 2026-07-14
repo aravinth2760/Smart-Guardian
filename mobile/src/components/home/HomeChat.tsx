@@ -40,7 +40,7 @@ export default function HomeChat({
 
             <Text style={styles.subtitle}>
               {groupId
-                ? groupMember
+                ? groupMember && groupMember > 1
                   ? "Stay connected with your guardians and family members."
                   : "No members yet. Add your family and guardians to this group."
                 : "You haven't created or joined any groups yet."}
@@ -57,7 +57,7 @@ export default function HomeChat({
 
           <ChevronRight size={20} color={colors.light.success} />
         </View>
-        {groupId && groupMember && (
+        {groupId && groupMember && groupMember > 1 && (
           <>
             <View style={styles.divider} />
 
