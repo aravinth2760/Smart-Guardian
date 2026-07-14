@@ -21,3 +21,34 @@ export const checkContacts = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getSOSSettings = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const settings = await userService.getUserSOSSettings(userId);
+    res.status(200).json(settings);
+  } catch (error) {
+    console.log("getSOSSettings controller error:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const updateSOSSettings = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const settings = await userService.updateUserSOSSettings(userId, req.body);
+    res.status(200).json(settings);
+  } catch (error) {
+    console.log("updateSOSSettings controller error:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+

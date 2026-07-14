@@ -57,6 +57,8 @@ model User {
 
   refreshToken RefreshToken?
 
+  sosSettings SOSSettings?
+
   createdChats Chat[] @relation("CreatedChats")
 
   chatMembers ChatMember[]
@@ -130,6 +132,10 @@ model ChatMember {
 
   role ChatMemberRole @default(member)
 
+  sosEnabled Boolean @default(true)
+
+  lastReadAt DateTime @default(now())
+
   joinedAt DateTime @default(now())
 
   chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
@@ -164,6 +170,12 @@ model JoinRequest {
   @@index([status])
 }
 
+enum MessageStatus {
+  sent
+  delivered
+  read
+}
+
 model Message {
   id String @id @default(cuid())
 
@@ -173,6 +185,8 @@ model Message {
 
   text String
 
+  status MessageStatus @default(sent)
+
   chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
   sender User @relation(name: "SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
@@ -181,4 +195,24 @@ model Message {
 
   @@index([chatId])
   @@index([senderId])
+}
+
+model SOSSettings {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message              String   @db.Text
+  countdown            Int      @default(5)
+  liveLocation         Boolean  @default(true)
+  liveLocationDuration Int      @default(30)
+  autoCall             Boolean  @default(true)
+  smsBackup            Boolean  @default(true)
+  alertSound           Boolean  @default(false)
+  silentSOS            Boolean  @default(false)
+  flashlightBlink      Boolean  @default(false)
+  vibration            Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([userId])
 }

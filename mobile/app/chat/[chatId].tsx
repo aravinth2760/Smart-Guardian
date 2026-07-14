@@ -16,28 +16,42 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 // Third-party
 import { router, useLocalSearchParams } from "expo-router";
-import { ArrowLeft, Phone, SendHorizontal, Video } from "lucide-react-native";
-import { useSelector } from "react-redux";
+import { ArrowLeft, Check, CheckCheck, Phone, SendHorizontal, Video } from "lucide-react-native";
+import { useDispatch, useSelector } from "react-redux";
 
 // Constants
 import colors from "@/constants/colors";
 import { ROUTES } from "@/constants/routes";
 
-// Providers
-import { useSocket } from "@/provider/SocketProvider";
-
 // Services
 import { getMessages, sendMessage } from "@/services/chat.service";
+import { socket } from "@/services/socket";
 
-// Types
-import type { RootState } from "@/store";
+// Store
+import {
+  setMessages,
+  appendMessage,
+  updateMessageStatus,
+  markChatAsRead,
+  clearUnread,
+  type ChatMessage,
+  type MessageStatus,
+} from "@/store/slices/chatSlice";
+import type { AppDispatch, RootState } from "@/store";
 
-type Message = {
-  id: string;
-  text: string;
-  createdAt: string;
-  senderId: string;
-};
+// ── Tick Icon ────────────────────────────────────────────────────────────────
+
+function TickIcon({ status }: { status: MessageStatus }) {
+  if (status === "read") {
+    return <CheckCheck size={14} color="#34B7F1" />;
+  }
+  if (status === "delivered") {
+    return <CheckCheck size={14} color={colors.light.textSecondary} />;
+  }
+  return <Check size={14} color={colors.light.textSecondary} />;
+}
+
+// ── Screen ───────────────────────────────────────────────────────────────────
 
 export default function ChatDetailsScreen() {
   const { chatId, name, phone } = useLocalSearchParams<{
@@ -46,70 +60,110 @@ export default function ChatDetailsScreen() {
     phone: string;
   }>();
 
+  const dispatch = useDispatch<AppDispatch>();
   const currentUser = useSelector((state: RootState) => state.auth?.user);
+  const cachedMessages = useSelector(
+    (state: RootState) => state.chat.messages[chatId] ?? [],
+  );
 
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<any[]>([]);
-  const { socket } = useSocket();
   const flatListRef = useRef<FlatList>(null);
 
+  // ── Load messages ──────────────────────────────────────────────────────────
+
   useEffect(() => {
-    if (!chatId) {
-      return;
-    }
-
-    const handleNewMessage = (newMessage: Message) => {
-      setMessages((prev) => [...prev, newMessage]);
-
-      setTimeout(() => {
-        flatListRef.current?.scrollToEnd({
-          animated: true,
-        });
-      }, 100);
-    };
+    if (!chatId) return;
 
     const loadMessages = async () => {
       try {
         const res = await getMessages(chatId);
-        setMessages(res.data.data);
-        setTimeout(() => {
-          flatListRef.current?.scrollToEnd({
-            animated: false,
-          });
-        }, 100);
+        dispatch(setMessages({ chatId, messages: res.data.data }));
+        setTimeout(() => flatListRef.current?.scrollToEnd({ animated: false }), 100);
       } catch (err) {
-        console.log(err);
+        console.log("Load messages error:", err);
       }
     };
 
+    // Join socket room
     const joinChat = () => socket.emit("join-chat", chatId);
     if (socket.connected) {
       joinChat();
     } else {
       socket.once("connect", joinChat);
     }
+
+    // Emit read receipt so sender sees blue ticks
+    if (currentUser?.id) {
+      socket.emit("read-chat", { chatId, readerId: currentUser.id });
+    }
+
+    // Clear unread count for this chat
+    dispatch(clearUnread(chatId));
+    dispatch(markChatAsRead(chatId));
+
+    // Socket: new message arrives while this chat is open
+    const handleNewMessage = (newMessage: ChatMessage) => {
+      if (newMessage.chatId !== chatId) return;
+      dispatch(appendMessage({ chatId, message: { ...newMessage, status: "read" } }));
+      // Immediately inform sender we read it
+      if (currentUser?.id) {
+        socket.emit("read-chat", { chatId, readerId: currentUser.id });
+      }
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+    };
+
+    // Socket: sender learns a message was delivered/read
+    const handleStatusUpdate = ({
+      messageId,
+      status,
+    }: {
+      chatId: string;
+      messageId: string;
+      status: MessageStatus;
+    }) => {
+      dispatch(updateMessageStatus({ chatId, messageId, status }));
+    };
+
+    // Socket: our messages were read by the other person
+    const handleMessagesRead = ({ chatId: cId }: { chatId: string; readerId: string }) => {
+      if (cId === chatId) {
+        dispatch(markChatAsRead(chatId));
+      }
+    };
+
     socket.on("new-message", handleNewMessage);
+    socket.on("message-delivered", handleStatusUpdate);
+    socket.on("messages-read", handleMessagesRead);
+
     void loadMessages();
 
     return () => {
       socket.emit("leave-chat", chatId);
       socket.off("new-message", handleNewMessage);
+      socket.off("message-delivered", handleStatusUpdate);
+      socket.off("messages-read", handleMessagesRead);
       socket.off("connect", joinChat);
     };
-  }, [chatId]);
+  }, [chatId, currentUser?.id, dispatch]);
+
+  // ── Send message ──────────────────────────────────────────────────────────
 
   const onSend = async () => {
     if (!message.trim()) return;
-
+    const text = message.trim();
+    setMessage("");
     try {
-      await sendMessage(chatId, message);
-      setMessage("");
+      await sendMessage(chatId, text);
+      // The server broadcasts "new-message" back; we also scroll
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     } catch (err) {
-      console.log(err);
+      console.log("Send message error:", err);
     }
   };
 
-  const renderItem = ({ item }: { item: any }) => {
+  // ── Render message ────────────────────────────────────────────────────────
+
+  const renderItem = ({ item }: { item: ChatMessage }) => {
     const isMe = item.senderId === currentUser?.id;
 
     return (
@@ -119,33 +173,28 @@ export default function ChatDetailsScreen() {
           isMe ? styles.myMessage : styles.otherMessage,
         ]}
       >
-        <Text
-          style={[
-            styles.messageText,
-            isMe && {
-              color: "#fff",
-            },
-          ]}
-        >
+        <Text style={[styles.messageText, isMe && { color: "#fff" }]}>
           {item.text}
         </Text>
 
-        <Text
-          style={[
-            styles.messageTime,
-            isMe && {
-              color: "#FCE7F3",
-            },
-          ]}
-        >
-          {new Date(item.createdAt).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </Text>
+        <View style={styles.messageMeta}>
+          <Text style={[styles.messageTime, isMe && { color: "#FCE7F3" }]}>
+            {new Date(item.createdAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </Text>
+          {isMe && (
+            <View style={styles.tickWrapper}>
+              <TickIcon status={item.status ?? "sent"} />
+            </View>
+          )}
+        </View>
       </View>
     );
   };
+
+  // ── UI ────────────────────────────────────────────────────────────────────
 
   return (
     <SafeAreaView style={styles.container}>
@@ -162,9 +211,7 @@ export default function ChatDetailsScreen() {
           <View style={styles.userInfo}>
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>
-                {String(name || "?")
-                  .charAt(0)
-                  .toUpperCase()}
+                {String(name || "?").charAt(0).toUpperCase()}
               </Text>
             </View>
 
@@ -181,11 +228,15 @@ export default function ChatDetailsScreen() {
         </View>
 
         <FlatList
-          data={messages}
+          ref={flatListRef}
+          data={cachedMessages}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           contentContainerStyle={styles.messages}
           showsVerticalScrollIndicator={false}
+          onContentSizeChange={() =>
+            flatListRef.current?.scrollToEnd({ animated: true })
+          }
         />
 
         <View style={styles.inputContainer}>
@@ -195,6 +246,8 @@ export default function ChatDetailsScreen() {
             placeholder="Type a message..."
             placeholderTextColor={colors.light.textSecondary}
             style={styles.input}
+            onSubmitEditing={onSend}
+            returnKeyType="send"
           />
 
           <Pressable style={styles.sendButton} onPress={onSend}>
@@ -205,6 +258,8 @@ export default function ChatDetailsScreen() {
     </SafeAreaView>
   );
 }
+
+// ── Styles ────────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   container: {
@@ -294,11 +349,21 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 
-  messageTime: {
-    alignSelf: "flex-end",
+  messageMeta: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
     marginTop: 6,
+    gap: 4,
+  },
+
+  messageTime: {
     fontSize: 11,
     color: colors.light.textSecondary,
+  },
+
+  tickWrapper: {
+    marginLeft: 2,
   },
 
   inputContainer: {

@@ -4,9 +4,12 @@ import { ChevronRight, MessageCircle } from "lucide-react-native";
 
 import colors from "@/constants/colors";
 
-export default function HomeChat() {
+interface HomeChatProps {
+  groupUnread?: number;
+}
+
+export default function HomeChat({ groupUnread = 0 }: HomeChatProps) {
   const router = useRouter();
-  const unreadMessages = 0;
 
   return (
     <View style={styles.container}>
@@ -26,6 +29,14 @@ export default function HomeChat() {
             </Text>
           </View>
 
+          {groupUnread > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>
+                {groupUnread > 99 ? "99+" : groupUnread}
+              </Text>
+            </View>
+          )}
+
           <ChevronRight size={20} color={colors.light.success} />
         </View>
 
@@ -36,14 +47,14 @@ export default function HomeChat() {
             styles.status,
             {
               color:
-                unreadMessages > 0
+                groupUnread > 0
                   ? colors.light.success
                   : colors.light.textSecondary,
             },
           ]}
         >
-          {unreadMessages > 0
-            ? `${unreadMessages} unread message${unreadMessages > 1 ? "s" : ""}`
+          {groupUnread > 0
+            ? `${groupUnread} unread message${groupUnread > 1 ? "s" : ""}`
             : "No new messages ✓"}
         </Text>
       </Pressable>
@@ -104,5 +115,22 @@ const styles = StyleSheet.create({
   status: {
     fontSize: 13,
     fontWeight: "600",
+  },
+
+  badge: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.light.primary,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 6,
+    marginRight: 8,
+  },
+
+  badgeText: {
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "700",
   },
 });

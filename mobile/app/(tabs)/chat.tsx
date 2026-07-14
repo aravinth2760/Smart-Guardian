@@ -1,12 +1,12 @@
 // React
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 // React Native
 import { FlatList, StatusBar, StyleSheet, Text, View } from "react-native";
 
 // Third-party
 import { router, useFocusEffect } from "expo-router";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 // Constants
 import colors from "@/constants/colors";
@@ -19,6 +19,22 @@ import { useContacts } from "@/provider/ContactsProvider";
 import { getChats } from "@/services/chat.service";
 import { getMyGroup } from "@/services/group.service";
 
+// Storage cache
+import { chatCache } from "@/storage/chatCache";
+
+// Store
+import {
+  setChats,
+  setGroupChat,
+  setChatsLoading,
+  updateChatLastMessage,
+  updateGroupLastMessage,
+  incrementUnread,
+  type PrivateChat,
+  type GroupChat,
+} from "@/store/slices/chatSlice";
+import type { AppDispatch, RootState } from "@/store";
+
 // Components
 import ChatCard from "@/components/chat/ChatCard";
 import FloatingButton from "@/components/chat/FloatingButton";
@@ -26,81 +42,109 @@ import ScreenContainer from "@/components/common/ScreenContainer";
 import ScreenHeader from "@/components/common/ScreenHeader";
 import SearchBar from "@/components/common/SearchBar";
 
-// Types
-import type { RootState } from "@/store";
-
-type Chat = {
-  id: string;
-  type: "private" | "group";
-  members: {
-    user: {
-      id: string;
-      name: string | null;
-      phone: string;
-    };
-  }[];
-  messages: {
-    id: string;
-    text: string;
-    createdAt: string;
-  }[];
-};
-
-type Group = {
-  id: string;
-  name: string;
-  inviteEnabled: boolean;
-  inviteCode: string | null;
-  role: "owner" | "manager" | "member";
-  lastMessage?: {
-    id: string;
-    text: string;
-    createdAt: string;
-    sender: {
-      id: string;
-      name: string | null;
-    };
-  } | null;
-};
+// Socket
+import { socket } from "@/services/socket";
 
 export default function ChatScreen() {
   const [search, setSearch] = useState("");
-  const [chats, setChats] = useState<Chat[]>([]);
-  const [group, setGroup] = useState<Group | null>(null);
+  const dispatch = useDispatch<AppDispatch>();
 
+  const chats = useSelector((state: RootState) => state.chat.chats);
+  const group = useSelector((state: RootState) => state.chat.groupChat);
+  const unreadCounts = useSelector((state: RootState) => state.chat.unreadCounts);
   const currentUserId = useSelector((state: RootState) => state.auth.user?.id);
 
   const { loaded, getName } = useContacts();
 
-  const loadChats = async () => {
-    try {
-      const res = await getChats();
-      setChats(res.data.data);
-    } catch (error) {
-      console.log("Load chats error:", error);
-    }
-  };
+  // Track whether we are currently on this screen (for unread increment)
+  const isActiveScreen = useRef(false);
 
-  const loadGroup = async () => {
-    try {
-      const res = await getMyGroup();
-      setGroup(res.data);
-    } catch (error) {
-      setGroup(null);
-    }
-  };
+  // ── Load from cache + then sync from server ──────────────────────────────
 
+  const loadFromServer = useCallback(async () => {
+    try {
+      dispatch(setChatsLoading(true));
+      const [chatsRes, groupRes] = await Promise.all([
+        getChats(),
+        getMyGroup().catch(() => ({ data: null })),
+      ]);
+
+      const serverChats: PrivateChat[] = chatsRes.data.data ?? [];
+      const serverGroup: GroupChat | null = groupRes.data?.data ?? groupRes.data ?? null;
+
+      dispatch(setChats(serverChats));
+      dispatch(setGroupChat(serverGroup));
+
+      // Persist for next cold launch
+      await chatCache.saveChats(serverChats);
+      await chatCache.saveGroup(serverGroup);
+    } catch (error) {
+      console.log("Load chats from server error:", error);
+    } finally {
+      dispatch(setChatsLoading(false));
+    }
+  }, [dispatch]);
+
+  // On mount: load cache instantly, then sync from server
   useEffect(() => {
-    void loadChats();
-    void loadGroup();
+    const init = async () => {
+      const [cachedChats, cachedGroup] = await Promise.all([
+        chatCache.loadChats(),
+        chatCache.loadGroup(),
+      ]);
+      if (cachedChats.length > 0) dispatch(setChats(cachedChats));
+      if (cachedGroup) dispatch(setGroupChat(cachedGroup));
+      // Always fetch fresh data in background
+      await loadFromServer();
+    };
+    void init();
   }, []);
 
+  // Refresh when tab is focused
   useFocusEffect(
     useCallback(() => {
-      void loadChats();
-      void loadGroup();
-    }, []),
+      isActiveScreen.current = true;
+      void loadFromServer();
+      return () => {
+        isActiveScreen.current = false;
+      };
+    }, [loadFromServer]),
   );
+
+  // ── Socket: real-time last message update in chat list ───────────────────
+
+  useEffect(() => {
+    const handleNewMessage = (msg: any) => {
+      if (!msg?.chatId) return;
+
+      // Update preview in chat list
+      dispatch(updateChatLastMessage({ chatId: msg.chatId, message: msg }));
+
+      // If the message is for the group, update group preview
+      if (group && msg.chatId === group.id) {
+        dispatch(
+          updateGroupLastMessage({
+            id: msg.id,
+            text: msg.text,
+            createdAt: msg.createdAt,
+            sender: msg.sender,
+          }),
+        );
+      }
+
+      // Increment unread if message is from someone else and screen not focused on that chat
+      if (msg.senderId !== currentUserId) {
+        dispatch(incrementUnread(msg.chatId));
+      }
+    };
+
+    socket.on("new-message", handleNewMessage);
+    return () => {
+      socket.off("new-message", handleNewMessage);
+    };
+  }, [dispatch, currentUserId, group]);
+
+  // ── Filter chats by search ───────────────────────────────────────────────
 
   const filteredChats = useMemo(() => {
     const keyword = search.trim().toLowerCase();
@@ -112,9 +156,7 @@ export default function ChatScreen() {
 
       const displayName = getName(otherUser?.phone, otherUser?.name ?? "");
 
-      if (!keyword) {
-        return true;
-      }
+      if (!keyword) return true;
 
       return (
         displayName.toLowerCase().includes(keyword) ||
@@ -154,6 +196,7 @@ export default function ChatScreen() {
               })
             : ""
         }
+        unread={group ? (unreadCounts[group.id] ?? 0) : 0}
         isSafetyCircle
         onPress={() => {
           if (group) {
@@ -179,21 +222,22 @@ export default function ChatScreen() {
             otherUser?.name ?? otherUser?.phone,
           );
 
+          const lastMsg = item.messages[0];
+          const unread = unreadCounts[item.id] ?? 0;
+
           return (
             <ChatCard
               name={displayName}
-              message={item.messages[0]?.text ?? ""}
+              message={lastMsg?.text ?? ""}
               time={
-                item.messages[0]
-                  ? new Date(item.messages[0].createdAt).toLocaleTimeString(
-                      [],
-                      {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      },
-                    )
+                lastMsg
+                  ? new Date(lastMsg.createdAt).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
                   : ""
               }
+              unread={unread}
               onPress={() =>
                 router.push(
                   ROUTES.CHAT.ROOM(
@@ -228,13 +272,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 80,
     paddingHorizontal: 20,
-  },
-
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: colors.light.background,
   },
 
   emptyTitle: {

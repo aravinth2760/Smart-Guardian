@@ -1,4 +1,5 @@
-import * as SecureStore from "expo-secure-store";
+import { secureStorage } from "@/storage/secureStorage";
+import { getSOSSettingsApi, updateSOSSettingsApi } from "@/api/user.api";
 
 const SOS_SETTINGS_KEY = "sos_settings";
 
@@ -32,11 +33,25 @@ export const defaultSOSSettings: SOSSettings = {
 
 class SOSSettingsService {
   async save(settings: SOSSettings): Promise<void> {
-    await SecureStore.setItemAsync(SOS_SETTINGS_KEY, JSON.stringify(settings));
+    await secureStorage.setItem(SOS_SETTINGS_KEY, JSON.stringify(settings));
   }
 
   async get(): Promise<SOSSettings> {
-    const data = await SecureStore.getItemAsync(SOS_SETTINGS_KEY);
+    try {
+      // Sync from backend if possible
+      const backendSettings = await getSOSSettingsApi();
+      if (backendSettings) {
+        await this.save(backendSettings);
+        return backendSettings;
+      }
+    } catch (error) {
+      console.log(
+        "Failed to fetch SOS settings from API, falling back to local:",
+        error,
+      );
+    }
+
+    const data = await secureStorage.getItem(SOS_SETTINGS_KEY);
 
     if (!data) {
       await this.save(defaultSOSSettings);
@@ -59,7 +74,15 @@ class SOSSettingsService {
       ...partialSettings,
     };
 
+    // Update locally first
     await this.save(updatedSettings);
+
+    // Sync to backend asynchronously
+    try {
+      await updateSOSSettingsApi(partialSettings);
+    } catch (error) {
+      console.log("Failed to sync updated SOS settings to backend:", error);
+    }
 
     return updatedSettings;
   }
@@ -67,11 +90,17 @@ class SOSSettingsService {
   async reset(): Promise<SOSSettings> {
     await this.save(defaultSOSSettings);
 
+    try {
+      await updateSOSSettingsApi(defaultSOSSettings);
+    } catch (error) {
+      console.log("Failed to sync reset SOS settings to backend:", error);
+    }
+
     return defaultSOSSettings;
   }
 
   async clear(): Promise<void> {
-    await SecureStore.deleteItemAsync(SOS_SETTINGS_KEY);
+    await secureStorage.deleteItem(SOS_SETTINGS_KEY);
   }
 }
 

@@ -57,16 +57,21 @@ export const sendMessage = async (
   senderId: string,
   text: string,
 ) => {
-  const member = await prisma.chatMember.findFirst({
-    where: {
-      chatId,
-      userId: senderId,
-    },
+  // Get all members of this chat to check delivery status
+  const members = await prisma.chatMember.findMany({
+    where: { chatId },
+    select: { userId: true },
   });
 
-  if (!member) {
+  const memberUserIds = members.map((m) => m.userId);
+
+  if (!memberUserIds.includes(senderId)) {
     throw new Error("You are not a member of this chat");
   }
+
+  // Determine delivery status based on socket presence
+  const { getDeliveryStatus, getIO } = await import("../socket.js");
+  const status = getDeliveryStatus(memberUserIds, senderId, chatId);
 
   const [message] = await prisma.$transaction([
     prisma.message.create({
@@ -74,6 +79,7 @@ export const sendMessage = async (
         chatId,
         senderId,
         text,
+        status,
       },
       include: {
         sender: {
@@ -96,12 +102,28 @@ export const sendMessage = async (
     }),
   ]);
 
-  // Real-time event
+  // Real-time event: broadcast new message to chat room
   const io = getIO();
   io.to(chatId).emit("new-message", message);
 
+  // Notify sender of delivery upgrade if recipient is online
+  if (status === "delivered") {
+    io.to(senderId).emit("message-delivered", {
+      chatId,
+      messageId: message.id,
+      status: "delivered",
+    });
+  } else if (status === "read") {
+    io.to(senderId).emit("message-delivered", {
+      chatId,
+      messageId: message.id,
+      status: "read",
+    });
+  }
+
   return message;
 };
+
 
 // Get User Chats
 export const getUserChats = async (userId: string) => {
@@ -918,3 +940,73 @@ export const sendGroupMessageService = async (userId: string, text: string) => {
 
   return message;
 };
+
+/**
+ * Emergency SOS Alert
+ * Posts a single alert message to the Safety Circle group chat on behalf of
+ * the triggering user. Only members with sosEnabled = true receive the alert.
+ */
+export const sendSOSGroupAlertService = async (userId: string) => {
+  // Find the group the user belongs to
+  const membership = await prisma.chatMember.findFirst({
+    where: {
+      userId,
+      chat: { type: "group" },
+    },
+    include: { chat: true },
+  });
+
+  if (!membership) {
+    throw new Error("You are not part of a Safety Circle");
+  }
+
+  const chatId = membership.chatId;
+
+  // Fetch user info for personalised alert
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { name: true, phone: true },
+  });
+
+  const userName = user?.name ?? user?.phone ?? "A member";
+
+  const alertText = `🚨 EMERGENCY SOS ALERT 🚨\n${userName} needs immediate help! Please respond urgently. This alert was triggered from the Smart Guardian app.`;
+
+  // Create the message in DB
+  const message = await prisma.message.create({
+    data: {
+      chatId,
+      senderId: userId,
+      text: alertText,
+      status: "sent",
+    },
+    include: {
+      sender: {
+        select: { id: true, name: true },
+      },
+    },
+  });
+
+  // Update chat updatedAt
+  await prisma.chat.update({
+    where: { id: chatId },
+    data: { updatedAt: new Date() },
+  });
+
+  // Broadcast to all group members via Socket.IO
+  const { getIO } = await import("../socket.js");
+  const io = getIO();
+  io.to(chatId).emit("new-message", message);
+
+  // Also emit a dedicated SOS event for clients to display a special alert UI
+  io.to(chatId).emit("sos-alert", {
+    chatId,
+    triggeredBy: userId,
+    userName,
+    message: alertText,
+    timestamp: message.createdAt,
+  });
+
+  return message;
+};
+

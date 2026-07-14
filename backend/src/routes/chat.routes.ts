@@ -21,6 +21,7 @@ import {
   getGroupMessages,
   sendGroupMessage,
   deleteGroupController,
+  sendSOSAlert,
 } from "../controllers/chat.controller.js";
 
 const router = Router();
@@ -61,6 +62,7 @@ router.post("/group/leave", authenticate, leaveGroup);
 
 router.get("/group/messages", authenticate, getGroupMessages);
 router.post("/group/message", authenticate, sendGroupMessage);
+router.post("/group/sos", authenticate, sendSOSAlert);
 
 // Keep parameterized routes at the end
 router.get("/:chatId/messages", authenticate, getChatMessages);

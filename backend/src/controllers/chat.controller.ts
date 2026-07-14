@@ -20,6 +20,7 @@ import {
   getGroupMessagesService,
   sendGroupMessageService,
   deleteGroupService,
+  sendSOSGroupAlertService,
 } from "../services/chat.service.js";
 import { getIO } from "../socket.js";
 
@@ -445,6 +446,29 @@ export const sendGroupMessage = async (req: Request, res: Response) => {
     return res.status(201).json({
       success: true,
       message: "Message sent successfully",
+      data: message,
+    });
+  } catch (error: any) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const sendSOSAlert = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const message = await sendSOSGroupAlertService(userId);
+
+    return res.status(201).json({
+      success: true,
+      message: "SOS alert sent to Safety Circle",
       data: message,
     });
   } catch (error: any) {

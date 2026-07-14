@@ -15,3 +15,7 @@ export const getGroupMessages = () => api.get("/chat/group/messages");
 
 export const sendGroupMessage = (text: string) =>
   api.post("/chat/group/message", { text });
+
+export const sendSOSAlertApi = () =>
+  api.post("/chat/group/sos");
+
