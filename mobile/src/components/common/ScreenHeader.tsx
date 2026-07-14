@@ -22,12 +22,10 @@ export default function ScreenHeader({
 }: Props) {
   return (
     <View style={styles.header}>
-      {showBack ? (
+      {showBack && (
         <Pressable style={styles.backButton} onPress={() => router.back()}>
           <ArrowLeft size={22} color={colors.light.text} />
         </Pressable>
-      ) : (
-        <View style={styles.placeholder} />
       )}
 
       {AvatarIcon && (
@@ -36,13 +34,15 @@ export default function ScreenHeader({
         </View>
       )}
 
-      <View style={styles.content}>
+      <View style={[styles.content, !showBack && styles.noBackContent]}>
         <Text style={styles.title}>{title}</Text>
 
         {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
       </View>
 
-      {rightComponent ?? <View style={styles.placeholder} />}
+      {rightComponent && (
+        <View style={styles.rightComponent}>{rightComponent}</View>
+      )}
     </View>
   );
 }
@@ -71,8 +71,8 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
 
-  placeholder: {
-    width: 42,
+  noBackContent: {
+    marginLeft: 0,
   },
 
   title: {
@@ -94,5 +94,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.light.primary,
     justifyContent: "center",
     alignItems: "center",
+  },
+
+  rightComponent: {
+    marginRight: 8,
   },
 });
