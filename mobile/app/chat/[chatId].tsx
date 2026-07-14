@@ -1,4 +1,7 @@
-import { useEffect, useState, useRef } from "react";
+// React
+import { useEffect, useRef, useState } from "react";
+
+// React Native
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -10,16 +13,24 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+// Third-party
 import { router, useLocalSearchParams } from "expo-router";
-import { ArrowLeft, Phone, Video, SendHorizontal } from "lucide-react-native";
+import { ArrowLeft, Phone, SendHorizontal, Video } from "lucide-react-native";
 import { useSelector } from "react-redux";
 
-import { getMessages, sendMessage } from "@/services/chat.service";
+// Constants
+import colors from "@/constants/colors";
+import { ROUTES } from "@/constants/routes";
 
+// Providers
 import { useSocket } from "@/provider/SocketProvider";
 
-import colors from "@/constants/colors";
-import { RootState } from "@/store";
+// Services
+import { getMessages, sendMessage } from "@/services/chat.service";
+
+// Types
+import type { RootState } from "@/store";
 
 type Message = {
   id: string;
@@ -144,7 +155,7 @@ export default function ChatDetailsScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Pressable onPress={() => router.replace("/(tabs)/chat")}>
+          <Pressable onPress={() => router.replace(ROUTES.TABS.CHAT)}>
             <ArrowLeft size={24} color={colors.light.text} />
           </Pressable>
 

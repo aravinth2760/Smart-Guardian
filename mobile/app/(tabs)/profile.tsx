@@ -1,5 +1,8 @@
-import { router } from "expo-router";
+// React Native
 import { ScrollView, StyleSheet } from "react-native";
+
+// Third-party
+import { router } from "expo-router";
 import {
   Bell,
   CircleHelp,
@@ -11,16 +14,20 @@ import {
   Users,
 } from "lucide-react-native";
 
+// Constants
+import { ROUTES } from "@/constants/routes";
+
+// Components
+import ScreenContainer from "@/components/common/ScreenContainer";
+import SettinnsSection from "@/components/common/SettingsSection";
 import LogoutButton from "@/components/profile/LogoutButton";
 import ProfileHeader from "@/components/profile/ProfileHeader";
-import SettinnsSection from "@/components/common/SettingsSection";
-import ScreenContainer from "@/components/common/ScreenContainer";
 
 const accountItems = [
   {
     icon: User,
     title: "Edit Profile",
-    onPress: () => router.push("/profile/edit"),
+    onPress: () => router.push(ROUTES.PROFILE.EDIT),
   },
   {
     icon: Shield,
@@ -35,12 +42,12 @@ const safetyItems = [
   {
     icon: Users,
     title: "Manage Guardians",
-    onPress: () => router.push("/profile/family-members"),
+    onPress: () => router.push(ROUTES.PROFILE.FAMILY_MEMBERS),
   },
   {
     icon: Shield,
     title: "SOS Settings",
-    onPress: () => router.push("/profile/sos"),
+    onPress: () => router.push(ROUTES.PROFILE.SOS.INDEX),
   },
   {
     icon: MapPin,

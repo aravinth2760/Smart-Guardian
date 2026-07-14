@@ -1,16 +1,28 @@
+// React
 import { useEffect, useState } from "react";
+
+// React Native
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { useRouter } from "expo-router";
-import { useSelector } from "react-redux";
+
+// Third-party
+import { router } from "expo-router";
 import { Crown, MessageCircle, UserRound } from "lucide-react-native";
+import { useSelector } from "react-redux";
 
-import { RootState } from "@/store";
+// Constants
 import colors from "@/constants/colors";
+import { ROUTES } from "@/constants/routes";
 
+// Services
+import { getGroupMembers } from "@/services/group.service";
+
+// Components
 import AppButton from "@/components/common/AppButton";
 import ScreenContainer from "@/components/common/ScreenContainer";
 import ScreenHeader from "@/components/common/ScreenHeader";
-import { getGroupMembers } from "@/services/group.service";
+
+// Types
+import type { RootState } from "@/store";
 
 type Member = {
   id: string;
@@ -20,8 +32,6 @@ type Member = {
 };
 
 export default function MembersScreen() {
-  const router = useRouter();
-
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -113,7 +123,7 @@ export default function MembersScreen() {
             <AppButton
               title="Open Safety Circle"
               Icon={MessageCircle}
-              onPress={() => router.push("/chat/group")}
+              onPress={() => router.push(ROUTES.CHAT.GROUP.INDEX)}
             />
           </>
         ) : (
@@ -134,9 +144,9 @@ export default function MembersScreen() {
               Icon={MessageCircle}
               onPress={() => {
                 if (members.length > 0) {
-                  router.push("/chat/group");
+                  router.push(ROUTES.CHAT.GROUP.INDEX);
                 } else {
-                  router.push("/group/setup");
+                  router.push(ROUTES.CHAT.GROUP.SETUP);
                 }
               }}
             />

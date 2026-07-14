@@ -1,3 +1,7 @@
+// React Native
+import { ScrollView } from "react-native";
+
+// Third-party
 import { router } from "expo-router";
 import {
   Bell,
@@ -16,15 +20,23 @@ import {
   Video,
 } from "lucide-react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { ScrollView } from "react-native";
 
+// Constants
+import { ROUTES } from "@/constants/routes";
+
+// Services
+import { sosSettingsService } from "@/services/sos-settings.service";
+
+// Components
 import ScreenContainer from "@/components/common/ScreenContainer";
 import ScreenHeader from "@/components/common/ScreenHeader";
 import SettingsSection from "@/components/common/SettingsSection";
-import { sosSettingsService } from "@/services/sos-settings.service";
-import { RootState } from "@/store";
+
+// Store
 import { setSOSSettings } from "@/store/slices/sosSettingsSlice";
-import { useState } from "react";
+
+// Types
+import type { RootState } from "@/store";
 
 export default function SOSSettingsScreen() {
   const dispatch = useDispatch();
@@ -125,19 +137,20 @@ export default function SOSSettingsScreen() {
             {
               icon: Bell,
               title: "SOS Message",
-              onPress: () => router.push("/profile/sos/message"),
+              onPress: () => router.push(ROUTES.PROFILE.SOS.MESSAGE),
             },
             {
               icon: Clock3,
               title: "Countdown",
               value: "5 sec",
-              onPress: () => router.push("/profile/sos/countdown"),
+              onPress: () => router.push(ROUTES.PROFILE.SOS.COUNTDOWN),
             },
             {
               icon: Timer,
               title: "Location Sharing Duration",
               value: "30 mins",
-              onPress: () => router.push("/profile/sos/live-location-duration"),
+              onPress: () =>
+                router.push(ROUTES.PROFILE.SOS.LIVE_LOCATION_DURATION),
             },
           ]}
         />
@@ -203,12 +216,12 @@ export default function SOSSettingsScreen() {
             {
               icon: TestTube2,
               title: "Test SOS",
-              onPress: () => router.push("/profile/sos/test"),
+              onPress: () => router.push(ROUTES.PROFILE.SOS.TEST),
             },
             {
               icon: History,
               title: "SOS History",
-              onPress: () => router.push("/profile/sos/history"),
+              onPress: () => router.push(ROUTES.PROFILE.SOS.HISTORY),
             },
           ]}
         />

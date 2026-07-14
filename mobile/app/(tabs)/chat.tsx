@@ -1,26 +1,33 @@
-import { router, useFocusEffect } from "expo-router";
+// React
 import { useCallback, useEffect, useMemo, useState } from "react";
+
+// React Native
+import { FlatList, StatusBar, StyleSheet, Text, View } from "react-native";
+
+// Third-party
+import { router, useFocusEffect } from "expo-router";
 import { useSelector } from "react-redux";
-import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  Text,
-  View,
-  StatusBar,
-} from "react-native";
 
-import ChatCard from "@/components/chat/ChatCard";
-import FloatingButton from "@/components/chat/FloatingButton";
-import SearchBar from "@/components/common/SearchBar";
-import ScreenContainer from "@/components/common/ScreenContainer";
-import ScreenHeader from "@/components/common/ScreenHeader";
-
+// Constants
 import colors from "@/constants/colors";
+import { ROUTES } from "@/constants/routes";
+
+// Providers
 import { useContacts } from "@/provider/ContactsProvider";
-import { RootState } from "@/store";
+
+// Services
 import { getChats } from "@/services/chat.service";
 import { getMyGroup } from "@/services/group.service";
+
+// Components
+import ChatCard from "@/components/chat/ChatCard";
+import FloatingButton from "@/components/chat/FloatingButton";
+import ScreenContainer from "@/components/common/ScreenContainer";
+import ScreenHeader from "@/components/common/ScreenHeader";
+import SearchBar from "@/components/common/SearchBar";
+
+// Types
+import type { RootState } from "@/store";
 
 type Chat = {
   id: string;
@@ -150,9 +157,9 @@ export default function ChatScreen() {
         isSafetyCircle
         onPress={() => {
           if (group) {
-            router.push("/chat/group");
+            router.push(ROUTES.CHAT.GROUP.INDEX);
           } else {
-            router.push("/group/setup");
+            router.push(ROUTES.CHAT.GROUP.SETUP);
           }
         }}
       />
@@ -188,14 +195,13 @@ export default function ChatScreen() {
                   : ""
               }
               onPress={() =>
-                router.push({
-                  pathname: "/chat/[chatId]",
-                  params: {
-                    chatId: item.id,
-                    name: displayName,
-                    phone: otherUser?.phone ?? "",
-                  },
-                })
+                router.push(
+                  ROUTES.CHAT.ROOM(
+                    item.id,
+                    displayName,
+                    otherUser?.phone ?? "",
+                  ),
+                )
               }
             />
           );
@@ -210,7 +216,7 @@ export default function ChatScreen() {
         }
       />
 
-      <FloatingButton onPress={() => router.push("/contacts")} />
+      <FloatingButton onPress={() => router.push(ROUTES.CHAT.CONTACTS)} />
     </ScreenContainer>
   );
 }
