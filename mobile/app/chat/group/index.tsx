@@ -12,11 +12,10 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 // Third-party
 import { router, useFocusEffect } from "expo-router";
-import { ArrowLeft, Check, CheckCheck, Info, Users } from "lucide-react-native";
+import { Check, CheckCheck, Info, Users } from "lucide-react-native";
 import { useDispatch, useSelector } from "react-redux";
 
 // Constants
@@ -48,9 +47,12 @@ import ScreenHeader from "@/components/common/ScreenHeader";
 
 function TickIcon({ status }: { status: MessageStatus }) {
   if (status === "read") return <CheckCheck size={13} color="#34B7F1" />;
-  if (status === "delivered") return <CheckCheck size={13} color={colors.light.textSecondary} />;
+  if (status === "delivered")
+    return <CheckCheck size={13} color={colors.light.textSecondary} />;
   return <Check size={13} color={colors.light.textSecondary} />;
 }
+
+const EMPTY_MESSAGES: ChatMessage[] = [];
 
 // ── Screen ───────────────────────────────────────────────────────────────────
 
@@ -62,7 +64,7 @@ export default function GroupChatScreen() {
   // Derive groupId from Redux cache
   const groupId = group?.id;
   const cachedMessages = useSelector(
-    (state: RootState) => state.chat.messages[groupId ?? ""] ?? [],
+    (state: RootState) => state.chat.messages[groupId ?? ""] ?? EMPTY_MESSAGES,
   );
 
   const [loading, setLoading] = useState(cachedMessages.length === 0);
@@ -100,7 +102,10 @@ export default function GroupChatScreen() {
       try {
         const res = await getGroupMessages();
         dispatch(setMessages({ chatId: gId, messages: res.data.data ?? [] }));
-        setTimeout(() => flatListRef.current?.scrollToEnd({ animated: false }), 200);
+        setTimeout(
+          () => flatListRef.current?.scrollToEnd({ animated: false }),
+          200,
+        );
       } catch (err) {
         console.log("Load group messages error:", err);
       } finally {
@@ -117,7 +122,8 @@ export default function GroupChatScreen() {
       if (!gId) return;
 
       // Emit read receipt
-      if (currentUserId) socket.emit("read-chat", { chatId: gId, readerId: currentUserId });
+      if (currentUserId)
+        socket.emit("read-chat", { chatId: gId, readerId: currentUserId });
       dispatch(clearUnread(gId));
       dispatch(markChatAsRead(gId));
 
@@ -128,8 +134,12 @@ export default function GroupChatScreen() {
 
       const handleNewMessage = (msg: ChatMessage) => {
         dispatch(appendMessage({ chatId: gId, message: msg }));
-        if (currentUserId) socket.emit("read-chat", { chatId: gId, readerId: currentUserId });
-        setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+        if (currentUserId)
+          socket.emit("read-chat", { chatId: gId, readerId: currentUserId });
+        setTimeout(
+          () => flatListRef.current?.scrollToEnd({ animated: true }),
+          100,
+        );
       };
 
       socket.on("new-message", handleNewMessage);
@@ -166,7 +176,10 @@ export default function GroupChatScreen() {
       setSending(true);
       await sendGroupMessage(value);
       setText("");
-      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+      setTimeout(
+        () => flatListRef.current?.scrollToEnd({ animated: true }),
+        100,
+      );
     } catch (err) {
       console.log("Send Group Message error:", err);
     } finally {
@@ -222,9 +235,7 @@ export default function GroupChatScreen() {
                   isMe && styles.myMessageContainer,
                 ]}
               >
-                {!isMe && (
-                  <Text style={styles.senderName}>{senderName}</Text>
-                )}
+                {!isMe && <Text style={styles.senderName}>{senderName}</Text>}
 
                 <View
                   style={[
@@ -269,12 +280,16 @@ export default function GroupChatScreen() {
               disabled={sending}
               onPress={handleSend}
             >
-              <Text style={styles.sendText}>{sending ? "Sending..." : "Send"}</Text>
+              <Text style={styles.sendText}>
+                {sending ? "Sending..." : "Send"}
+              </Text>
             </Pressable>
           </View>
         ) : (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>No members in your Safety Circle</Text>
+            <Text style={styles.emptyTitle}>
+              No members in your Safety Circle
+            </Text>
             <Text style={styles.emptySubtitle}>
               Ask your family members to send a join request to start chatting.
             </Text>

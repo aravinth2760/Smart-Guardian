@@ -1,12 +1,5 @@
-import {
-  Alert,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { router, useSegments } from "expo-router";
+import { Alert, ScrollView, StatusBar } from "react-native";
+import { useSegments } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store";
@@ -18,8 +11,6 @@ import HomeChat from "@/components/home/HomeChat";
 import { sendSOSAlertApi } from "@/services/chat.service";
 import { socket } from "@/services/socket";
 import { incrementUnread, appendMessage } from "@/store/slices/chatSlice";
-import { ROUTES } from "@/constants/routes";
-import colors from "@/constants/colors";
 
 export default function HomeScreen() {
   const [sendingAlert, setSendingAlert] = useState(false);
@@ -34,10 +25,26 @@ export default function HomeScreen() {
 
   const segments = useSegments();
   const activeTab = segments[1];
+  const hasOtherMembers = (group?.members?.length ?? 0) > 1;
 
   // ── SOS handler ────────────────────────────────────────────────────────────
 
   const handleSOSPress = useCallback(() => {
+    if (!group?.id) {
+      Alert.alert(
+        "No Safety Circle",
+        "You haven't created or joined a Safety Circle yet.",
+      );
+      return;
+    }
+
+    if (!group.members || !hasOtherMembers) {
+      Alert.alert(
+        "No Members",
+        "Add family members and guardians to your Safety Circle before sending an SOS alert.",
+      );
+      return;
+    }
     Alert.alert(
       "🚨 Emergency SOS",
       "This will send an emergency alert to your entire Safety Circle. Continue?",
@@ -110,6 +117,8 @@ export default function HomeScreen() {
         userName={userName as string}
         onSOSPress={handleSOSPress}
         sendingAlert={sendingAlert}
+        groupId={group?.id}
+        groupMember={groupMembers.length}
       />
       <HomeChat
         groupId={group?.id}

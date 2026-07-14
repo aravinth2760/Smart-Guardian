@@ -15,12 +15,16 @@ type HomeHeaderProps = {
   userName?: string;
   onSOSPress: () => void;
   sendingAlert?: boolean;
+  groupId?: string | undefined;
+  groupMember?: number;
 };
 
 export default function HomeHeader({
   userName = "Aravinth",
   onSOSPress,
   sendingAlert = false,
+  groupId,
+  groupMember,
 }: HomeHeaderProps) {
   const clamp = (min: number, preferred: number, max: number) =>
     Math.max(min, Math.min(preferred, max));
@@ -108,7 +112,11 @@ export default function HomeHeader({
                 },
               ]}
             >
-              Need help? Alert your guardians instantly.
+              {groupId
+                ? groupMember && groupMember > 1
+                  ? "Need help? Alert your guardians instantly."
+                  : "Add your guardians to your Safety Circle to send alerts."
+                : "Create or join a Safety Circle to alert your guardians."}
             </Text>
           </View>
 

@@ -62,9 +62,7 @@ const preferenceItems = [
   {
     icon: Bell,
     title: "Notifications",
-    onPress: () => {
-      console.log("Notifications");
-    },
+    onPress: () => router.push(ROUTES.PROFILE.NOTIFICATION),
   },
   {
     icon: Globe,
