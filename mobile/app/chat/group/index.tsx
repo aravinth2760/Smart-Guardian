@@ -29,6 +29,10 @@ import { getGroupMessages, sendGroupMessage } from "@/services/chat.service";
 import { getMyGroup } from "@/services/group.service";
 import { socket } from "@/services/socket";
 
+// Components
+import ScreenContainer from "@/components/common/ScreenContainer";
+import ScreenHeader from "@/components/common/ScreenHeader";
+
 // Types
 import type { RootState } from "@/store";
 
@@ -59,6 +63,7 @@ export default function GroupChatScreen() {
   const [group, setGroup] = useState<{
     id: string;
     name: string;
+    members: GroupMember[];
   } | null>(null);
   const [role, setRole] = useState("member");
 
@@ -131,6 +136,8 @@ export default function GroupChatScreen() {
     }
   };
 
+  const hasOtherMembers = (group?.members?.length ?? 0) > 1;
+
   const loadMessages = async () => {
     try {
       const res = await getGroupMessages();
@@ -167,49 +174,32 @@ export default function GroupChatScreen() {
   };
 
   if (loading) {
-    return (
-      <SafeAreaView style={styles.loading}>
-        <ActivityIndicator size="large" color={colors.light.primary} />
-      </SafeAreaView>
-    );
+    return <ScreenContainer loading />;
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ScreenContainer>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <View style={styles.header}>
-          <Pressable onPress={() => router.back()}>
-            <ArrowLeft size={24} color={colors.light.text} />
-          </Pressable>
-
-          <View style={styles.headerCenter}>
-            <View style={styles.avatar}>
-              <Users size={20} color="#fff" />
-            </View>
-
-            <View>
-              <Text style={styles.title}>Safety Circle</Text>
-
-              <Text style={styles.subtitle}>Family Group</Text>
-            </View>
-          </View>
-
-          <Pressable
-            onPress={() =>
-              router.push({
-                pathname: ROUTES.CHAT.GROUP.INFO.INDEX,
-                params: {
-                  role: role,
-                },
-              })
-            }
-          >
-            <Info size={22} color={colors.light.text} />
-          </Pressable>
-        </View>
+        <ScreenHeader
+          title="Safety Circle"
+          subtitle="Family Group"
+          avatarIcon={Users}
+          rightComponent={
+            <Pressable
+              onPress={() =>
+                router.push({
+                  pathname: ROUTES.CHAT.GROUP.INFO.INDEX,
+                  params: { role },
+                })
+              }
+            >
+              <Info size={22} color={colors.light.text} />
+            </Pressable>
+          }
+        />
 
         <FlatList
           ref={flatListRef}
@@ -259,84 +249,43 @@ export default function GroupChatScreen() {
             );
           }}
         />
-        <View style={styles.inputContainer}>
-          <TextInput
-            value={text}
-            onChangeText={setText}
-            placeholder="Type a message..."
-            placeholderTextColor={colors.light.textSecondary}
-            style={styles.input}
-            multiline
-          />
+        {hasOtherMembers ? (
+          <View style={styles.inputContainer}>
+            <TextInput
+              value={text}
+              onChangeText={setText}
+              placeholder="Type a message..."
+              placeholderTextColor={colors.light.textSecondary}
+              style={styles.input}
+              multiline
+            />
 
-          <Pressable
-            style={[styles.sendButton, sending && { opacity: 0.6 }]}
-            disabled={sending}
-            onPress={handleSend}
-          >
-            <Text style={styles.sendText}>
-              {sending ? "Sending..." : "Send"}
+            <Pressable
+              style={[styles.sendButton, sending && { opacity: 0.6 }]}
+              disabled={sending}
+              onPress={handleSend}
+            >
+              <Text style={styles.sendText}>
+                {sending ? "Sending..." : "Send"}
+              </Text>
+            </Pressable>
+          </View>
+        ) : (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyTitle}>
+              No members in your Safety Circle
             </Text>
-          </Pressable>
-        </View>
+            <Text style={styles.emptySubtitle}>
+              Ask your family members to send a join request to start chatting.
+            </Text>
+          </View>
+        )}
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.light.background,
-  },
-
-  loading: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: colors.light.background,
-  },
-
-  header: {
-    height: 70,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    backgroundColor: colors.light.card,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.light.cardBorder,
-  },
-
-  headerCenter: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-    marginHorizontal: 14,
-  },
-
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.light.primary,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-
-  title: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: colors.light.text,
-  },
-
-  subtitle: {
-    fontSize: 13,
-    color: colors.light.textSecondary,
-    marginTop: 2,
-  },
-
   list: {
     padding: 16,
     paddingBottom: 20,
@@ -431,5 +380,27 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "700",
     fontSize: 15,
+  },
+
+  emptyState: {
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+    borderTopWidth: 1,
+    borderTopColor: colors.light.cardBorder,
+    backgroundColor: colors.light.card,
+    alignItems: "center",
+  },
+
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.light.text,
+  },
+
+  emptySubtitle: {
+    marginTop: 6,
+    fontSize: 14,
+    color: colors.light.textSecondary,
+    textAlign: "center",
   },
 });

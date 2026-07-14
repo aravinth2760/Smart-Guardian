@@ -1,5 +1,6 @@
 import { router } from "expo-router";
-import { ArrowLeft } from "lucide-react-native";
+import { LucideIcon, ArrowLeft } from "lucide-react-native";
+import { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import colors from "@/constants/colors";
@@ -8,26 +9,40 @@ type Props = {
   title: string;
   subtitle?: string;
   showBack?: boolean;
+  avatarIcon?: LucideIcon;
+  rightComponent?: ReactNode;
 };
 
 export default function ScreenHeader({
   title,
   subtitle,
   showBack = true,
+  avatarIcon: AvatarIcon,
+  rightComponent,
 }: Props) {
   return (
     <View style={styles.header}>
-      {showBack && (
+      {showBack ? (
         <Pressable style={styles.backButton} onPress={() => router.back()}>
           <ArrowLeft size={22} color={colors.light.text} />
         </Pressable>
+      ) : (
+        <View style={styles.placeholder} />
+      )}
+
+      {AvatarIcon && (
+        <View style={styles.avatar}>
+          <AvatarIcon size={20} color="#fff" />
+        </View>
       )}
 
       <View style={styles.content}>
         <Text style={styles.title}>{title}</Text>
 
-        {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+        {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
       </View>
+
+      {rightComponent ?? <View style={styles.placeholder} />}
     </View>
   );
 }
@@ -48,11 +63,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: colors.light.cardBorder,
-    marginRight: 14,
+    marginRight: 12,
   },
 
   content: {
     flex: 1,
+    marginLeft: 12,
+  },
+
+  placeholder: {
+    width: 42,
   },
 
   title: {
@@ -65,5 +85,14 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 14,
     color: colors.light.textSecondary,
+  },
+
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.light.primary,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
