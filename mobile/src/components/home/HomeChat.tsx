@@ -3,19 +3,30 @@ import { useRouter } from "expo-router";
 import { ChevronRight, MessageCircle } from "lucide-react-native";
 
 import colors from "@/constants/colors";
+import { ROUTES } from "@/constants/routes";
 
 interface HomeChatProps {
   groupUnread?: number;
+  groupId?: string | undefined;
+  groupMember?: number;
 }
 
-export default function HomeChat({ groupUnread = 0 }: HomeChatProps) {
+export default function HomeChat({
+  groupUnread = 0,
+  groupId,
+  groupMember,
+}: HomeChatProps) {
   const router = useRouter();
 
   return (
     <View style={styles.container}>
       <Pressable
         style={styles.card}
-        onPress={() => router.push("/(tabs)/chat")}
+        onPress={() =>
+          router.push(
+            groupId ? ROUTES.CHAT.GROUP.INDEX : ROUTES.CHAT.GROUP.SETUP,
+          )
+        }
       >
         <View style={styles.header}>
           <View style={styles.iconContainer}>
@@ -23,9 +34,16 @@ export default function HomeChat({ groupUnread = 0 }: HomeChatProps) {
           </View>
 
           <View style={styles.content}>
-            <Text style={styles.title}>Family Group</Text>
+            <Text style={styles.title}>
+              {groupId ? "Family Group" : "No Groups Yet"}
+            </Text>
+
             <Text style={styles.subtitle}>
-              Stay connected with your guardians and family members.
+              {groupId
+                ? groupMember
+                  ? "Stay connected with your guardians and family members."
+                  : "No members yet. Add your family and guardians to this group."
+                : "You haven't created or joined any groups yet."}
             </Text>
           </View>
 
@@ -39,24 +57,29 @@ export default function HomeChat({ groupUnread = 0 }: HomeChatProps) {
 
           <ChevronRight size={20} color={colors.light.success} />
         </View>
+        {groupId && groupMember && (
+          <>
+            <View style={styles.divider} />
 
-        <View style={styles.divider} />
-
-        <Text
-          style={[
-            styles.status,
-            {
-              color:
-                groupUnread > 0
-                  ? colors.light.success
-                  : colors.light.textSecondary,
-            },
-          ]}
-        >
-          {groupUnread > 0
-            ? `${groupUnread} unread message${groupUnread > 1 ? "s" : ""}`
-            : "No new messages ✓"}
-        </Text>
+            <Text
+              style={[
+                styles.status,
+                {
+                  color:
+                    groupUnread > 0
+                      ? colors.light.success
+                      : colors.light.textSecondary,
+                },
+              ]}
+            >
+              <Text style={styles.status}>
+                {groupUnread > 0
+                  ? `${groupUnread} unread message${groupUnread > 1 ? "s" : ""}`
+                  : "No new messages ✓"}
+              </Text>
+            </Text>
+          </>
+        )}
       </Pressable>
     </View>
   );

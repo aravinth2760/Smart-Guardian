@@ -1,4 +1,11 @@
-import { Alert, ScrollView, StatusBar, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { router, useSegments } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -104,7 +111,11 @@ export default function HomeScreen() {
         onSOSPress={handleSOSPress}
         sendingAlert={sendingAlert}
       />
-      <HomeChat groupUnread={groupUnread} />
+      <HomeChat
+        groupId={group?.id}
+        groupMember={groupMembers.length}
+        groupUnread={groupUnread}
+      />
       <GuardiansList contacts={guardians} />
     </ScrollView>
   );

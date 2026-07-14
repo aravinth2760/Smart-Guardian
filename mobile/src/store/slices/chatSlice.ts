@@ -49,7 +49,15 @@ export interface GroupChat {
   inviteEnabled: boolean;
   inviteCode: string | null;
   role: "owner" | "manager" | "member";
+  members: GroupMember[];
   lastMessage?: GroupLastMessage | null;
+}
+
+export interface GroupMember {
+  id: string;
+  name: string;
+  phone: string;
+  role: string;
 }
 
 interface ChatState {

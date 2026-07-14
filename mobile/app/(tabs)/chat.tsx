@@ -51,7 +51,9 @@ export default function ChatScreen() {
 
   const chats = useSelector((state: RootState) => state.chat.chats);
   const group = useSelector((state: RootState) => state.chat.groupChat);
-  const unreadCounts = useSelector((state: RootState) => state.chat.unreadCounts);
+  const unreadCounts = useSelector(
+    (state: RootState) => state.chat.unreadCounts,
+  );
   const currentUserId = useSelector((state: RootState) => state.auth.user?.id);
 
   const { loaded, getName } = useContacts();
@@ -70,7 +72,8 @@ export default function ChatScreen() {
       ]);
 
       const serverChats: PrivateChat[] = chatsRes.data.data ?? [];
-      const serverGroup: GroupChat | null = groupRes.data?.data ?? groupRes.data ?? null;
+      const serverGroup: GroupChat | null =
+        groupRes.data?.data ?? groupRes.data ?? null;
 
       dispatch(setChats(serverChats));
       dispatch(setGroupChat(serverGroup));
@@ -165,6 +168,8 @@ export default function ChatScreen() {
     });
   }, [chats, search, currentUserId, getName]);
 
+  const hasOtherMembers = (group?.members?.length ?? 0) > 1;
+
   if (!loaded) {
     return <ScreenContainer loading />;
   }
@@ -178,15 +183,17 @@ export default function ChatScreen() {
       </View>
 
       <ChatCard
-        name={group ? group.name : "Safety Circle"}
+        name={group ? group.name : "No Groups Yet"}
         message={
-          group
-            ? group.lastMessage
-              ? group.lastMessage.sender.id === currentUserId
-                ? `You: ${group.lastMessage.text}`
-                : `${group.lastMessage.sender.name}: ${group.lastMessage.text}`
-              : "Stay connected with your trusted family."
-            : "Get started with your Safety Circle."
+          !group
+            ? "You haven't created or joined any groups yet."
+            : !hasOtherMembers
+              ? "No members yet. Add your family and guardians to this group."
+              : group.lastMessage
+                ? group.lastMessage.sender.id === currentUserId
+                  ? `You: ${group.lastMessage.text}`
+                  : `${group.lastMessage.sender.name}: ${group.lastMessage.text}`
+                : "Stay connected with your guardians and family members."
         }
         time={
           group?.lastMessage
