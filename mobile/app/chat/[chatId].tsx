@@ -16,7 +16,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 // Third-party
 import { router, useLocalSearchParams } from "expo-router";
-import { ArrowLeft, Check, CheckCheck, Phone, SendHorizontal, Video } from "lucide-react-native";
+import {
+  ArrowLeft,
+  Check,
+  CheckCheck,
+  Phone,
+  SendHorizontal,
+  Video,
+} from "lucide-react-native";
 import { useDispatch, useSelector } from "react-redux";
 
 // Constants
@@ -43,12 +50,14 @@ import type { AppDispatch, RootState } from "@/store";
 
 function TickIcon({ status }: { status: MessageStatus }) {
   if (status === "read") {
-    return <CheckCheck size={14} color="#34B7F1" />;
+    return <CheckCheck size={14} color="#53BDEB" />;
   }
+
   if (status === "delivered") {
-    return <CheckCheck size={14} color={colors.light.textSecondary} />;
+    return <CheckCheck size={14} color={colors.light.text} />;
   }
-  return <Check size={14} color={colors.light.textSecondary} />;
+
+  return <Check size={14} color={colors.light.text} />;
 }
 
 // ── Screen ───────────────────────────────────────────────────────────────────
@@ -78,7 +87,10 @@ export default function ChatDetailsScreen() {
       try {
         const res = await getMessages(chatId);
         dispatch(setMessages({ chatId, messages: res.data.data }));
-        setTimeout(() => flatListRef.current?.scrollToEnd({ animated: false }), 100);
+        setTimeout(
+          () => flatListRef.current?.scrollToEnd({ animated: false }),
+          100,
+        );
       } catch (err) {
         console.log("Load messages error:", err);
       }
@@ -104,12 +116,17 @@ export default function ChatDetailsScreen() {
     // Socket: new message arrives while this chat is open
     const handleNewMessage = (newMessage: ChatMessage) => {
       if (newMessage.chatId !== chatId) return;
-      dispatch(appendMessage({ chatId, message: { ...newMessage, status: "read" } }));
+      dispatch(
+        appendMessage({ chatId, message: { ...newMessage, status: "read" } }),
+      );
       // Immediately inform sender we read it
       if (currentUser?.id) {
         socket.emit("read-chat", { chatId, readerId: currentUser.id });
       }
-      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+      setTimeout(
+        () => flatListRef.current?.scrollToEnd({ animated: true }),
+        100,
+      );
     };
 
     // Socket: sender learns a message was delivered/read
@@ -125,7 +142,12 @@ export default function ChatDetailsScreen() {
     };
 
     // Socket: our messages were read by the other person
-    const handleMessagesRead = ({ chatId: cId }: { chatId: string; readerId: string }) => {
+    const handleMessagesRead = ({
+      chatId: cId,
+    }: {
+      chatId: string;
+      readerId: string;
+    }) => {
       if (cId === chatId) {
         dispatch(markChatAsRead(chatId));
       }
@@ -156,7 +178,10 @@ export default function ChatDetailsScreen() {
     try {
       await sendMessage(chatId, text);
       // The server broadcasts "new-message" back; we also scroll
-      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+      setTimeout(
+        () => flatListRef.current?.scrollToEnd({ animated: true }),
+        100,
+      );
     } catch (err) {
       console.log("Send message error:", err);
     }
@@ -174,17 +199,29 @@ export default function ChatDetailsScreen() {
           isMe ? styles.myMessage : styles.otherMessage,
         ]}
       >
-        <Text style={[styles.messageText, isMe && { color: "#fff" }]}>
+        <Text
+          style={[
+            styles.messageText,
+            isMe ? styles.myMessageText : styles.otherMessageText,
+          ]}
+        >
           {item.text}
         </Text>
 
-        <View style={styles.messageMeta}>
-          <Text style={[styles.messageTime, isMe && { color: "#FCE7F3" }]}>
+        <View style={styles.messageFooter}>
+          <Text
+            style={[
+              styles.messageTime,
+              isMe ? styles.myMessageTime : styles.otherMessageTime,
+            ]}
+          >
             {new Date(item.createdAt).toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",
+              hour12: true,
             })}
           </Text>
+
           {isMe && (
             <View style={styles.tickWrapper}>
               <TickIcon status={item.status ?? "sent"} />
@@ -212,7 +249,9 @@ export default function ChatDetailsScreen() {
           <View style={styles.userInfo}>
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>
-                {String(name || "?").charAt(0).toUpperCase()}
+                {String(name || "?")
+                  .charAt(0)
+                  .toUpperCase()}
               </Text>
             </View>
 
@@ -268,6 +307,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.light.background,
   },
 
+  // Header
   header: {
     height: 70,
     flexDirection: "row",
@@ -319,58 +359,77 @@ const styles = StyleSheet.create({
     gap: 18,
   },
 
+  // Messages
   messages: {
-    padding: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
 
   messageContainer: {
     maxWidth: "80%",
-    padding: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     borderRadius: 18,
-    marginBottom: 14,
+    marginBottom: 10,
   },
 
   myMessage: {
     alignSelf: "flex-end",
-    backgroundColor: colors.light.primary,
-    borderBottomRightRadius: 6,
+    backgroundColor: "#FFFFFF",
+    borderBottomRightRadius: 5,
   },
 
   otherMessage: {
     alignSelf: "flex-start",
-    backgroundColor: colors.light.card,
-    borderBottomLeftRadius: 6,
+    backgroundColor: colors.light.primary,
+    borderBottomLeftRadius: 5,
     borderWidth: 1,
     borderColor: colors.light.cardBorder,
   },
 
   messageText: {
     fontSize: 15,
-    color: colors.light.text,
     lineHeight: 22,
   },
 
-  messageMeta: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    marginTop: 6,
-    gap: 4,
+  myMessageText: {
+    color: colors.light.text,
   },
 
-  messageTime: {
-    fontSize: 11,
-    color: colors.light.textSecondary,
+  otherMessageText: {
+    color: "#FFFFFF",
+  },
+
+  messageFooter: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    marginTop: 4,
   },
 
   tickWrapper: {
-    marginLeft: 2,
+    marginLeft: 4,
   },
 
+  messageTime: {
+    fontSize: 10,
+    fontWeight: "500",
+  },
+
+  myMessageTime: {
+    color: colors.light.textSecondary,
+  },
+
+  otherMessageTime: {
+    color: "rgba(255,255,255,0.8)",
+  },
+
+  // Input
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderTopWidth: 1,
     borderTopColor: colors.light.cardBorder,
     backgroundColor: colors.light.card,
@@ -378,21 +437,23 @@ const styles = StyleSheet.create({
 
   input: {
     flex: 1,
-    height: 50,
-    borderRadius: 25,
+    minHeight: 48,
+    maxHeight: 120,
+    borderRadius: 24,
     backgroundColor: colors.light.backgroundSecondary,
     paddingHorizontal: 18,
+    paddingVertical: 12,
     color: colors.light.text,
     fontSize: 15,
   },
 
   sendButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: colors.light.primary,
     justifyContent: "center",
     alignItems: "center",
-    marginLeft: 12,
+    marginLeft: 10,
   },
 });
