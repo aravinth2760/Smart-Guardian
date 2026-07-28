@@ -1,7 +1,14 @@
 // React
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { FlatList, StatusBar, StyleSheet, Text, View, RefreshControl } from "react-native";
+import {
+  FlatList,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
+  RefreshControl,
+} from "react-native";
 
 // Third-party
 import { router, useFocusEffect } from "expo-router";
@@ -24,10 +31,7 @@ import ScreenHeader from "@/components/common/ScreenHeader";
 import SearchBar from "@/components/common/SearchBar";
 
 // Services & Cache
-import {
-  setChats,
-  setGroupChat,
-} from "@/store/slices/chatSlice";
+import { setChats, setGroupChat } from "@/store/slices/chatSlice";
 import { getChats } from "@/services/chat.service";
 import { getMyGroup } from "@/services/group.service";
 import { chatCache } from "@/storage/chatCache";
@@ -134,10 +138,14 @@ export default function ChatScreen() {
         }
         time={
           group?.lastMessage
-            ? new Date(group.lastMessage.createdAt).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
+            ? new Date(group.lastMessage.createdAt).toLocaleTimeString(
+                "en-US",
+                {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: true,
+                },
+              )
             : ""
         }
         unread={group ? (unreadCounts[group.id] ?? 0) : 0}
@@ -178,9 +186,10 @@ export default function ChatScreen() {
               message={lastMsg?.text ?? ""}
               time={
                 lastMsg
-                  ? new Date(lastMsg.createdAt).toLocaleTimeString([], {
+                  ? new Date(lastMsg.createdAt).toLocaleTimeString("en-US", {
                       hour: "2-digit",
                       minute: "2-digit",
+                      hour12: true,
                     })
                   : ""
               }

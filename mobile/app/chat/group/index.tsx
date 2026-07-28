@@ -270,9 +270,10 @@ export default function GroupChatScreen() {
 
                 <View style={[styles.metaRow, isMe && styles.myMetaRow]}>
                   <Text style={[styles.time, isMe && styles.myTime]}>
-                    {new Date(item.createdAt).toLocaleTimeString([], {
+                    {new Date(item.createdAt).toLocaleTimeString("en-US", {
                       hour: "2-digit",
                       minute: "2-digit",
+                      hour12: true,
                     })}
                   </Text>
                   {isMe && <TickIcon status={item.status ?? "sent"} />}

@@ -215,7 +215,7 @@ export default function ChatDetailsScreen() {
               isMe ? styles.myMessageTime : styles.otherMessageTime,
             ]}
           >
-            {new Date(item.createdAt).toLocaleTimeString([], {
+            {new Date(item.createdAt).toLocaleTimeString("en-US", {
               hour: "2-digit",
               minute: "2-digit",
               hour12: true,
