@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   defaultSOSSettings,
   SOSSettings,
-} from "@/services/sos-settings.service";
+} from "@/types/sos";
 
 const slice = createSlice({
   name: "sosSettings",

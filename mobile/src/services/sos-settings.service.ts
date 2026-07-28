@@ -1,35 +1,14 @@
 import { secureStorage } from "@/storage/secureStorage";
 import { getSOSSettingsApi, updateSOSSettingsApi } from "@/api/user.api";
 
+// Re-export from the shared types file so all existing importers keep working.
+export type { SOSSettings } from "@/types/sos";
+export { defaultSOSSettings } from "@/types/sos";
+
+import type { SOSSettings } from "@/types/sos";
+import { defaultSOSSettings } from "@/types/sos";
+
 const SOS_SETTINGS_KEY = "sos_settings";
-
-export interface SOSSettings {
-  message: string;
-  countdown: number;
-  liveLocation: boolean;
-  liveLocationDuration: number;
-  autoCall: boolean;
-  smsBackup: boolean;
-  alertSound: boolean;
-  silentSOS: boolean;
-  flashlightBlink: boolean;
-  vibration: boolean;
-}
-
-export const defaultSOSSettings: SOSSettings = {
-  message:
-    "🚨 I need help! This is an emergency. My live location is being shared. Please contact me immediately.",
-
-  countdown: 5,
-  liveLocation: true,
-  liveLocationDuration: 30,
-  autoCall: true,
-  smsBackup: true,
-  alertSound: false,
-  silentSOS: false,
-  flashlightBlink: false,
-  vibration: true,
-};
 
 class SOSSettingsService {
   async save(settings: SOSSettings): Promise<void> {

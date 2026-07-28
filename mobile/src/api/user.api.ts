@@ -1,6 +1,6 @@
 import api from "./client";
 import { CheckContactsRequest, CheckContactsResponse } from "@/types/user";
-import type { SOSSettings } from "@/services/sos-settings.service";
+import type { SOSSettings } from "@/types/sos";
 
 export const checkContacts = async (
   data: CheckContactsRequest,
