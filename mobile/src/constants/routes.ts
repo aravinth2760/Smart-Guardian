@@ -23,6 +23,8 @@ export const ROUTES = {
       MESSAGE: "/profile/sos/message",
       TEST: "/profile/sos/test",
     },
+
+    NOTIFICATION: "/profile/notification",
   },
 
   CHAT: {

@@ -15,7 +15,7 @@ import {
   UserCheck,
   Users,
 } from "lucide-react-native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 // Constants
 import colors from "@/constants/colors";
@@ -29,8 +29,11 @@ import ScreenHeader from "@/components/common/ScreenHeader";
 
 // Types
 import type { RootState } from "@/store";
+import { setChats, setGroupChat } from "@/store/slices/chatSlice";
+import { chatCache } from "@/storage/chatCache";
 
 export default function GroupInfoScreen() {
+  const dispatch = useDispatch();
   const currentUserId = useSelector((state: RootState) => state.auth.user?.id);
 
   const [role, setRole] = useState<string>("member");
@@ -79,6 +82,16 @@ export default function GroupInfoScreen() {
             try {
               await leaveGroup();
 
+              // Update Redux immediately
+              dispatch(setGroupChat(null));
+              dispatch(setChats([]));
+
+              // Clear cache
+              await Promise.all([
+                chatCache.saveGroup(null),
+                chatCache.saveChats([]),
+              ]);
+
               router.dismissAll();
               router.replace(ROUTES.TABS.CHAT);
             } catch (error: any) {
@@ -108,6 +121,16 @@ export default function GroupInfoScreen() {
           onPress: async () => {
             try {
               await deleteGroup();
+
+              // Update Redux immediately
+              dispatch(setGroupChat(null));
+              dispatch(setChats([]));
+
+              // Clear cache
+              await Promise.all([
+                chatCache.saveGroup(null),
+                chatCache.saveChats([]),
+              ]);
 
               router.dismissAll();
               router.replace(ROUTES.TABS.CHAT);

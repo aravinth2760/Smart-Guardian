@@ -11,6 +11,7 @@ import {
   Text,
   TextInput,
   View,
+  RefreshControl,
 } from "react-native";
 
 // Third-party
@@ -68,6 +69,7 @@ export default function GroupChatScreen() {
   );
 
   const [loading, setLoading] = useState(cachedMessages.length === 0);
+  const [refreshing, setRefreshing] = useState(false);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [role, setRole] = useState("member");
@@ -114,6 +116,18 @@ export default function GroupChatScreen() {
     },
     [dispatch],
   );
+
+  const onRefresh = useCallback(async () => {
+    if (!groupId) return;
+    setRefreshing(true);
+    try {
+      await Promise.all([loadGroup(), loadMessages(groupId)]);
+    } catch (error) {
+      console.error("Refresh failed:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [groupId, loadGroup, loadMessages]);
 
   useEffect(() => {
     const initialize = async () => {
@@ -221,6 +235,9 @@ export default function GroupChatScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
           onContentSizeChange={() =>
             flatListRef.current?.scrollToEnd({ animated: true })
           }

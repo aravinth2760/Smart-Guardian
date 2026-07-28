@@ -1,8 +1,7 @@
 // React
 import { useMemo, useState } from "react";
 
-// React Native
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // Third-party
@@ -25,8 +24,20 @@ import ScreenContainer from "@/components/common/ScreenContainer";
 import SearchBar from "@/components/common/SearchBar";
 
 export default function ContactScreen() {
-  const { contacts, loaded } = useContacts();
+  const { contacts, loaded, reloadContacts } = useContacts();
   const [search, setSearch] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await reloadContacts();
+    } catch (error) {
+      console.error("Failed to reload contacts:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const filteredContacts = useMemo(() => {
     const keyword = search.trim().toLowerCase();
@@ -82,6 +93,9 @@ export default function ContactScreen() {
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContainer}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         renderItem={({ item }) => (
           <ContactCard
             name={item.name}

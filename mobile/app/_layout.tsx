@@ -10,6 +10,7 @@ import SettingsProvider from "@/provider/SettingsProvider";
 import { SocketProvider } from "@/provider/SocketProvider";
 import { socket } from "@/services/socket";
 import { store } from "@/store";
+import ChatProvider from "@/provider/ChatProvider";
 
 export default function RootLayout() {
   useEffect(() => {
@@ -22,13 +23,15 @@ export default function RootLayout() {
     <Provider store={store}>
       <AuthProvider>
         <SocketProvider>
-          <ContactsProvider>
-            <SettingsProvider>
-              <SafeAreaProvider>
-                <Stack screenOptions={{ headerShown: false }} />
-              </SafeAreaProvider>
-            </SettingsProvider>
-          </ContactsProvider>
+          <ChatProvider>
+            <ContactsProvider>
+              <SettingsProvider>
+                <SafeAreaProvider>
+                  <Stack screenOptions={{ headerShown: false }} />
+                </SafeAreaProvider>
+              </SettingsProvider>
+            </ContactsProvider>
+          </ChatProvider>
         </SocketProvider>
       </AuthProvider>
     </Provider>

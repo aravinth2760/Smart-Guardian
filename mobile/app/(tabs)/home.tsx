@@ -1,4 +1,4 @@
-import { Alert, ScrollView, StatusBar } from "react-native";
+import { Alert, ScrollView, StatusBar, RefreshControl } from "react-native";
 import { useSegments } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,12 +8,14 @@ import HomeHeader from "@/components/home/HomeHeader";
 import GuardiansList from "@/components/home/HomeGuardians";
 import HomeChat from "@/components/home/HomeChat";
 
-import { sendSOSAlertApi } from "@/services/chat.service";
-import { socket } from "@/services/socket";
-import { incrementUnread, appendMessage } from "@/store/slices/chatSlice";
+import { sendSOSAlertApi, getChats } from "@/services/chat.service";
+import { getMyGroup } from "@/services/group.service";
+import { setChats, setGroupChat } from "@/store/slices/chatSlice";
+import { chatCache } from "@/storage/chatCache";
 
 export default function HomeScreen() {
   const [sendingAlert, setSendingAlert] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
 
   const userName = useSelector((state: RootState) => state.auth.user?.name);
@@ -26,6 +28,31 @@ export default function HomeScreen() {
   const segments = useSegments();
   const activeTab = segments[1];
   const hasOtherMembers = (group?.members?.length ?? 0) > 1;
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const [chatsRes, groupRes] = await Promise.all([
+        getChats().catch(() => ({ data: { data: [] } })),
+        getMyGroup().catch(() => ({ data: null })),
+      ]);
+
+      const chats = chatsRes.data?.data ?? [];
+      const groupData = groupRes.data?.data ?? groupRes.data ?? null;
+
+      dispatch(setChats(chats));
+      dispatch(setGroupChat(groupData));
+
+      await Promise.all([
+        chatCache.saveChats(chats),
+        chatCache.saveGroup(groupData),
+      ]);
+    } catch (error) {
+      console.error("Refresh failed:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [dispatch]);
 
   // ── SOS handler ────────────────────────────────────────────────────────────
 
@@ -75,25 +102,6 @@ export default function HomeScreen() {
     );
   }, []);
 
-  // ── Real-time: increment group unread on new messages while NOT in group ──
-
-  useEffect(() => {
-    if (!group?.id) return;
-
-    const handleNewMessage = (msg: any) => {
-      if (msg?.chatId !== group.id) return;
-      if (msg?.senderId === currentUserId) return;
-      // Only increment if user isn't currently on the group chat screen
-      dispatch(incrementUnread(group.id));
-      dispatch(appendMessage({ chatId: group.id, message: msg }));
-    };
-
-    socket.on("new-message", handleNewMessage);
-    return () => {
-      socket.off("new-message", handleNewMessage);
-    };
-  }, [group?.id, currentUserId, dispatch]);
-
   // ── Guardians (group members from Redux) ──────────────────────────────────
 
   const groupMembers = (group as any)?.members ?? [];
@@ -107,7 +115,12 @@ export default function HomeScreen() {
     }));
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       <StatusBar
         barStyle={activeTab === "home" ? "light-content" : "dark-content"}
         backgroundColor="transparent"

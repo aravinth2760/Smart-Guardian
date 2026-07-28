@@ -18,6 +18,11 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     if (!userId) return;
 
     socket.connect();
+
+    if (socket.connected) {
+      socket.emit("join-user", userId);
+    }
+
     const onConnect = () => {
       socket.emit("join-user", userId);
     };

@@ -236,7 +236,7 @@ export const createGroupService = async (userId: string) => {
     if (!exists) break;
   }
 
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const chat = await tx.chat.create({
       data: {
         type: "group",
@@ -257,6 +257,11 @@ export const createGroupService = async (userId: string) => {
 
     return chat;
   });
+
+  const { getIO } = await import("../socket.js");
+  getIO().to(userId).emit("group-created", result);
+
+  return result;
 };
 
 export const getMyGroupService = async (userId: string) => {
@@ -342,11 +347,21 @@ export const deleteGroupService = async (userId: string) => {
     throw new Error("Only the Safety Circle owner can delete the group");
   }
 
+  const members = await prisma.chatMember.findMany({
+    where: { chatId: ownerGroup.chatId },
+  });
+
   await prisma.chat.delete({
     where: {
       id: ownerGroup.chatId,
     },
   });
+
+  const { getIO } = await import("../socket.js");
+  const io = getIO();
+  for (const m of members) {
+    io.to(m.userId).emit("group-deleted", { groupId: ownerGroup.chatId });
+  }
 
   return {
     message: "Safety Circle deleted successfully.",
@@ -622,6 +637,21 @@ export const approveJoinRequestService = async (
     });
   });
 
+  const { getIO } = await import("../socket.js");
+  const io = getIO();
+
+  const members = await prisma.chatMember.findMany({
+    where: { chatId: request.chatId },
+  });
+
+  for (const m of members) {
+    if (m.userId === request.userId) {
+      io.to(m.userId).emit("group-created", { id: request.chatId });
+    } else {
+      io.to(m.userId).emit("group-updated");
+    }
+  }
+
   return {
     message: "Join request approved successfully.",
   };
@@ -761,6 +791,18 @@ export const removeGroupMemberService = async (
     },
   });
 
+  const { getIO } = await import("../socket.js");
+  const io = getIO();
+  io.to(removeUserId).emit("group-deleted", { groupId: targetMember.chatId });
+  
+  const remainingMembers = await prisma.chatMember.findMany({
+    where: { chatId: targetMember.chatId },
+  });
+
+  for (const m of remainingMembers) {
+    io.to(m.userId).emit("group-updated");
+  }
+
   return {
     removedUserId: removeUserId,
   };
@@ -855,6 +897,18 @@ export const leaveGroupService = async (userId: string) => {
       id: member.id,
     },
   });
+
+  const { getIO } = await import("../socket.js");
+  const io = getIO();
+  io.to(userId).emit("group-deleted", { groupId: member.chatId });
+  
+  const remainingMembers = await prisma.chatMember.findMany({
+    where: { chatId: member.chatId },
+  });
+
+  for (const m of remainingMembers) {
+    io.to(m.userId).emit("group-updated");
+  }
 
   return {
     userId,

@@ -1,11 +1,10 @@
 // React
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-// React Native
-import { FlatList, StatusBar, StyleSheet, Text, View } from "react-native";
+import { FlatList, StatusBar, StyleSheet, Text, View, RefreshControl } from "react-native";
 
 // Third-party
-import { router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, usePathname } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 
 // Constants
@@ -15,24 +14,6 @@ import { ROUTES } from "@/constants/routes";
 // Providers
 import { useContacts } from "@/provider/ContactsProvider";
 
-// Services
-import { getChats } from "@/services/chat.service";
-import { getMyGroup } from "@/services/group.service";
-
-// Storage cache
-import { chatCache } from "@/storage/chatCache";
-
-// Store
-import {
-  setChats,
-  setGroupChat,
-  setChatsLoading,
-  updateChatLastMessage,
-  updateGroupLastMessage,
-  incrementUnread,
-  type PrivateChat,
-  type GroupChat,
-} from "@/store/slices/chatSlice";
 import type { AppDispatch, RootState } from "@/store";
 
 // Components
@@ -44,6 +25,17 @@ import SearchBar from "@/components/common/SearchBar";
 
 // Socket
 import { socket } from "@/services/socket";
+import {
+  incrementUnread,
+  appendMessage,
+  updateChatLastMessage,
+  updateGroupLastMessage,
+  setChats,
+  setGroupChat,
+} from "@/store/slices/chatSlice";
+import { getChats } from "@/services/chat.service";
+import { getMyGroup } from "@/services/group.service";
+import { chatCache } from "@/storage/chatCache";
 
 export default function ChatScreen() {
   const [search, setSearch] = useState("");
@@ -57,95 +49,105 @@ export default function ChatScreen() {
   const currentUserId = useSelector((state: RootState) => state.auth.user?.id);
 
   const { loaded, getName } = useContacts();
-
-  // Track whether we are currently on this screen (for unread increment)
   const isActiveScreen = useRef(false);
+  // Tracks which chatId screen the user is currently viewing so we don't
+  // double-increment unread while they're actively reading that chat.
+  const activeChatIdRef = useRef<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // ── Load from cache + then sync from server ──────────────────────────────
-
-  const loadFromServer = useCallback(async () => {
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
     try {
-      dispatch(setChatsLoading(true));
       const [chatsRes, groupRes] = await Promise.all([
-        getChats(),
+        getChats().catch(() => ({ data: { data: [] } })),
         getMyGroup().catch(() => ({ data: null })),
       ]);
 
-      const serverChats: PrivateChat[] = chatsRes.data.data ?? [];
-      const serverGroup: GroupChat | null =
-        groupRes.data?.data ?? groupRes.data ?? null;
+      const updatedChats = chatsRes.data?.data ?? [];
+      const updatedGroup = groupRes.data?.data ?? groupRes.data ?? null;
 
-      dispatch(setChats(serverChats));
-      dispatch(setGroupChat(serverGroup));
+      dispatch(setChats(updatedChats));
+      dispatch(setGroupChat(updatedGroup));
 
-      // Persist for next cold launch
-      await chatCache.saveChats(serverChats);
-      await chatCache.saveGroup(serverGroup);
+      await Promise.all([
+        chatCache.saveChats(updatedChats),
+        chatCache.saveGroup(updatedGroup),
+      ]);
     } catch (error) {
-      console.log("Load chats from server error:", error);
+      console.error("Refresh failed:", error);
     } finally {
-      dispatch(setChatsLoading(false));
+      setRefreshing(false);
     }
   }, [dispatch]);
 
-  // On mount: load cache instantly, then sync from server
-  useEffect(() => {
-    const init = async () => {
-      const [cachedChats, cachedGroup] = await Promise.all([
-        chatCache.loadChats(),
-        chatCache.loadGroup(),
-      ]);
-      if (cachedChats.length > 0) dispatch(setChats(cachedChats));
-      if (cachedGroup) dispatch(setGroupChat(cachedGroup));
-      // Always fetch fresh data in background
-      await loadFromServer();
-    };
-    void init();
-  }, []);
-
-  // Refresh when tab is focused
   useFocusEffect(
     useCallback(() => {
       isActiveScreen.current = true;
-      void loadFromServer();
       return () => {
         isActiveScreen.current = false;
       };
-    }, [loadFromServer]),
+    }, []),
   );
 
-  // ── Socket: real-time last message update in chat list ───────────────────
+  // ── Track which chat screen is currently open ─────────────────────────────
+  // usePathname changes whenever the user navigates; we parse it to extract
+  // the chatId so we never increment unread for the chat being viewed.
+  const pathname = usePathname();
+  useEffect(() => {
+    // e.g. /chat/abc123  or  /chat/group
+    const privateMatch = pathname.match(/^\/chat\/([^/]+)$/);
+    const isGroupChat = pathname === "/chat/group";
+
+    if (privateMatch && privateMatch[1] !== "group" && privateMatch[1] !== "contacts") {
+      activeChatIdRef.current = privateMatch[1];
+    } else if (isGroupChat) {
+      activeChatIdRef.current = group?.id ?? null;
+    } else {
+      activeChatIdRef.current = null;
+    }
+  }, [pathname, group?.id]);
 
   useEffect(() => {
-    const handleNewMessage = (msg: any) => {
-      if (!msg?.chatId) return;
+    const handleNewMessage = (message: any) => {
+      if (!message?.chatId) return;
 
-      // Update preview in chat list
-      dispatch(updateChatLastMessage({ chatId: msg.chatId, message: msg }));
+      dispatch(
+        updateChatLastMessage({
+          chatId: message.chatId,
+          message,
+        }),
+      );
 
-      // If the message is for the group, update group preview
-      if (group && msg.chatId === group.id) {
+      if (group?.id === message.chatId) {
         dispatch(
           updateGroupLastMessage({
-            id: msg.id,
-            text: msg.text,
-            createdAt: msg.createdAt,
-            sender: msg.sender,
+            id: message.id,
+            text: message.text,
+            createdAt: message.createdAt,
+            sender: message.sender,
           }),
         );
+        // Keep group messages in sync for the cached list
+        dispatch(appendMessage({ chatId: message.chatId, message }));
       }
 
-      // Increment unread if message is from someone else and screen not focused on that chat
-      if (msg.senderId !== currentUserId) {
-        dispatch(incrementUnread(msg.chatId));
+      // Only increment unread if:
+      // 1. Not sent by current user
+      // 2. User is not currently viewing that chat
+      if (
+        message.senderId !== currentUserId &&
+        activeChatIdRef.current !== message.chatId
+      ) {
+        dispatch(incrementUnread(message.chatId));
       }
     };
 
     socket.on("new-message", handleNewMessage);
+
     return () => {
       socket.off("new-message", handleNewMessage);
     };
-  }, [dispatch, currentUserId, group]);
+  }, [dispatch, currentUserId, group?.id]);
 
   // ── Filter chats by search ───────────────────────────────────────────────
 
@@ -219,6 +221,9 @@ export default function ChatScreen() {
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ marginTop: StatusBar.currentHeight || 0 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         renderItem={({ item }) => {
           const otherUser = item.members.find(
             (member) => member.user.id !== currentUserId,
