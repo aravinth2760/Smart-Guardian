@@ -441,8 +441,6 @@ export const sendGroupMessage = async (req: Request, res: Response) => {
 
     const message = await sendGroupMessageService(userId as string, text);
 
-    getIO().to(message.chatId).emit("new-message", message);
-
     return res.status(201).json({
       success: true,
       message: "Message sent successfully",

@@ -138,6 +138,7 @@ export default function ChatDetailsScreen() {
     void loadMessages();
 
     return () => {
+      dispatch(clearUnread(chatId));
       socket.emit("leave-chat", chatId);
       socket.off("new-message", handleNewMessage);
       socket.off("message-delivered", handleStatusUpdate);

@@ -161,6 +161,7 @@ export default function GroupChatScreen() {
       await loadMessages(gId);
 
       return () => {
+        if (gId) dispatch(clearUnread(gId));
         socket.emit("leave-chat", gId);
         socket.off("new-message", handleNewMessage);
         socket.off("connect", joinChat);

@@ -102,9 +102,12 @@ export const sendMessage = async (
     }),
   ]);
 
-  // Real-time event: broadcast new message to chat room
+  // Real-time event: broadcast new message to chat room and members' personal user rooms
   const io = getIO();
   io.to(chatId).emit("new-message", message);
+  for (const uid of memberUserIds) {
+    io.to(uid).emit("new-message", message);
+  }
 
   // Notify sender of delivery upgrade if recipient is online
   if (status === "delivered") {
@@ -992,6 +995,17 @@ export const sendGroupMessageService = async (userId: string, text: string) => {
     },
   });
 
+  const io = getIO();
+  io.to(member.chatId).emit("new-message", message);
+
+  const members = await prisma.chatMember.findMany({
+    where: { chatId: member.chatId },
+    select: { userId: true },
+  });
+  for (const m of members) {
+    io.to(m.userId).emit("new-message", message);
+  }
+
   return message;
 };
 
@@ -1051,6 +1065,23 @@ export const sendSOSGroupAlertService = async (userId: string) => {
   const { getIO } = await import("../socket.js");
   const io = getIO();
   io.to(chatId).emit("new-message", message);
+
+  // Notify all group members individually via their user rooms
+  const members = await prisma.chatMember.findMany({
+    where: { chatId },
+    select: { userId: true },
+  });
+
+  for (const m of members) {
+    io.to(m.userId).emit("new-message", message);
+    io.to(m.userId).emit("sos-alert", {
+      chatId,
+      triggeredBy: userId,
+      userName,
+      message: alertText,
+      timestamp: message.createdAt,
+    });
+  }
 
   // Also emit a dedicated SOS event for clients to display a special alert UI
   io.to(chatId).emit("sos-alert", {

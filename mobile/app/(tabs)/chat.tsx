@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FlatList, StatusBar, StyleSheet, Text, View, RefreshControl } from "react-native";
 
 // Third-party
-import { router, useFocusEffect, usePathname } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 
 // Constants
@@ -23,13 +23,8 @@ import ScreenContainer from "@/components/common/ScreenContainer";
 import ScreenHeader from "@/components/common/ScreenHeader";
 import SearchBar from "@/components/common/SearchBar";
 
-// Socket
-import { socket } from "@/services/socket";
+// Services & Cache
 import {
-  incrementUnread,
-  appendMessage,
-  updateChatLastMessage,
-  updateGroupLastMessage,
   setChats,
   setGroupChat,
 } from "@/store/slices/chatSlice";
@@ -88,66 +83,6 @@ export default function ChatScreen() {
       };
     }, []),
   );
-
-  // ── Track which chat screen is currently open ─────────────────────────────
-  // usePathname changes whenever the user navigates; we parse it to extract
-  // the chatId so we never increment unread for the chat being viewed.
-  const pathname = usePathname();
-  useEffect(() => {
-    // e.g. /chat/abc123  or  /chat/group
-    const privateMatch = pathname.match(/^\/chat\/([^/]+)$/);
-    const isGroupChat = pathname === "/chat/group";
-
-    if (privateMatch && privateMatch[1] !== "group" && privateMatch[1] !== "contacts") {
-      activeChatIdRef.current = privateMatch[1];
-    } else if (isGroupChat) {
-      activeChatIdRef.current = group?.id ?? null;
-    } else {
-      activeChatIdRef.current = null;
-    }
-  }, [pathname, group?.id]);
-
-  useEffect(() => {
-    const handleNewMessage = (message: any) => {
-      if (!message?.chatId) return;
-
-      dispatch(
-        updateChatLastMessage({
-          chatId: message.chatId,
-          message,
-        }),
-      );
-
-      if (group?.id === message.chatId) {
-        dispatch(
-          updateGroupLastMessage({
-            id: message.id,
-            text: message.text,
-            createdAt: message.createdAt,
-            sender: message.sender,
-          }),
-        );
-        // Keep group messages in sync for the cached list
-        dispatch(appendMessage({ chatId: message.chatId, message }));
-      }
-
-      // Only increment unread if:
-      // 1. Not sent by current user
-      // 2. User is not currently viewing that chat
-      if (
-        message.senderId !== currentUserId &&
-        activeChatIdRef.current !== message.chatId
-      ) {
-        dispatch(incrementUnread(message.chatId));
-      }
-    };
-
-    socket.on("new-message", handleNewMessage);
-
-    return () => {
-      socket.off("new-message", handleNewMessage);
-    };
-  }, [dispatch, currentUserId, group?.id]);
 
   // ── Filter chats by search ───────────────────────────────────────────────
 
