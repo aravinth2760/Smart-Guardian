@@ -11,6 +11,8 @@ export const ROUTES = {
     CHAT: "/(tabs)/chat",
   },
 
+  NOTIFICATION: "/notification",
+
   PROFILE: {
     EDIT: "/profile/edit",
     FAMILY_MEMBERS: "/profile/family-members",

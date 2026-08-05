@@ -8,6 +8,9 @@ import {
 import { Shield, Bell } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
+import { router } from "expo-router";
+import { ROUTES } from "@/constants/routes";
+
 import SOSButton from "@/components/common/SOSButton";
 import colors from "@/constants/colors";
 
@@ -55,7 +58,10 @@ export default function HomeHeader({
               </Text>
             </View>
 
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => router.push(ROUTES.NOTIFICATION)}
+            >
               <Bell size={22} color="#fff" />
             </TouchableOpacity>
           </View>
