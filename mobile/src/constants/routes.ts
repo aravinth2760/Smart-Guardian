@@ -28,7 +28,8 @@ export const ROUTES = {
 
     NOTIFICATION: "/profile/notification",
 
-    HELPCENTER: "/profile/help-center",
+    HELP_CENTER: "/profile/help-center",
+    PRIVACY_POLICY: "/profile/privacy-policy",
   },
 
   CHAT: {

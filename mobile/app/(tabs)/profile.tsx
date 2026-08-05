@@ -77,14 +77,12 @@ const supportItems = [
   {
     icon: CircleHelp,
     title: "Help Center",
-    onPress: () => router.push(ROUTES.PROFILE.HELPCENTER),
+    onPress: () => router.push(ROUTES.PROFILE.HELP_CENTER),
   },
   {
     icon: FileText,
     title: "Privacy Policy",
-    onPress: () => {
-      console.log("Privacy Policy");
-    },
+    onPress: () => router.push(ROUTES.PROFILE.PRIVACY_POLICY),
   },
 ];
 
