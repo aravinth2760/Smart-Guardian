@@ -77,9 +77,7 @@ const supportItems = [
   {
     icon: CircleHelp,
     title: "Help Center",
-    onPress: () => {
-      console.log("Help Center");
-    },
+    onPress: () => router.push(ROUTES.PROFILE.HELPCENTER),
   },
   {
     icon: FileText,
