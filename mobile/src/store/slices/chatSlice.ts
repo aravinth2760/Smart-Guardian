@@ -67,6 +67,10 @@ interface ChatState {
   unreadCounts: Record<string, number>;
   lastFetched: Record<string, string>;
   isChatsLoading: boolean;
+  // Tracks message IDs that have already incremented the unread count
+  // to prevent double-counting when multiple socket listeners fire.
+  // Plain object (not Set) so Redux state stays fully JSON-serializable.
+  processedMessageIds: Record<string, true>;
 }
 
 const initialState: ChatState = {
@@ -76,6 +80,7 @@ const initialState: ChatState = {
   unreadCounts: {},
   lastFetched: {},
   isChatsLoading: false,
+  processedMessageIds: {},
 };
 
 const chatSlice = createSlice({
@@ -84,10 +89,23 @@ const chatSlice = createSlice({
   reducers: {
     setChats(state, action: PayloadAction<PrivateChat[]>) {
       state.chats = action.payload;
+      action.payload.forEach((chat: any) => {
+        if (typeof chat.unreadCount === "number") {
+          state.unreadCounts[chat.id] = chat.unreadCount;
+        }
+      });
     },
 
     setGroupChat(state, action: PayloadAction<GroupChat | null>) {
       state.groupChat = action.payload;
+      if (
+        action.payload &&
+        typeof (action.payload as any).unreadCount === "number"
+      ) {
+        state.unreadCounts[action.payload.id] = (
+          action.payload as any
+        ).unreadCount;
+      }
     },
 
     setChatsLoading(state, action: PayloadAction<boolean>) {
@@ -165,8 +183,20 @@ const chatSlice = createSlice({
       state.unreadCounts[chatId] = 0;
     },
 
-    incrementUnread(state, action: PayloadAction<string>) {
-      const chatId = action.payload;
+    incrementUnread(
+      state,
+      action: PayloadAction<{ chatId: string; messageId: string }>,
+    ) {
+      const { chatId, messageId } = action.payload;
+      // Guard: only count each incoming message once, even if multiple
+      // socket listeners or emissions fire for the same message.
+      if (state.processedMessageIds[messageId]) return;
+      state.processedMessageIds[messageId] = true;
+      // Trim the record to avoid unbounded memory growth (keep last 200 IDs)
+      const ids = Object.keys(state.processedMessageIds);
+      if (ids.length > 200) {
+        delete state.processedMessageIds[ids[0]];
+      }
       state.unreadCounts[chatId] = (state.unreadCounts[chatId] ?? 0) + 1;
     },
 

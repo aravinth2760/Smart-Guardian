@@ -51,7 +51,20 @@ export const initSocket = (server: HttpServer) => {
      * Payload: { chatId, readerId }
      * We emit "messages-read" to all other members of that chat.
      */
-    socket.on("read-chat", ({ chatId, readerId }: { chatId: string; readerId: string }) => {
+    socket.on("read-chat", async ({ chatId, readerId }: { chatId: string; readerId: string }) => {
+      if (chatId && readerId) {
+        const { prisma } = await import("./prisma/client.js");
+        await prisma.message.updateMany({
+          where: {
+            chatId,
+            senderId: { not: readerId },
+            status: { not: "read" },
+          },
+          data: {
+            status: "read",
+          },
+        }).catch(console.error);
+      }
       // Broadcast to all other sockets in the chat room
       socket.to(chatId).emit("messages-read", { chatId, readerId });
     });

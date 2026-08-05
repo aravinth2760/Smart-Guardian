@@ -60,6 +60,9 @@ function TickIcon({ status }: { status: MessageStatus }) {
   return <Check size={14} color={colors.light.text} />;
 }
 
+// Stable empty array avoids a new reference on every render when no messages cached
+const EMPTY_MESSAGES: ChatMessage[] = [];
+
 // ── Screen ───────────────────────────────────────────────────────────────────
 
 export default function ChatDetailsScreen() {
@@ -72,7 +75,7 @@ export default function ChatDetailsScreen() {
   const dispatch = useDispatch<AppDispatch>();
   const currentUser = useSelector((state: RootState) => state.auth?.user);
   const cachedMessages = useSelector(
-    (state: RootState) => state.chat.messages[chatId] ?? [],
+    (state: RootState) => state.chat.messages[chatId] ?? EMPTY_MESSAGES,
   );
 
   const [message, setMessage] = useState("");

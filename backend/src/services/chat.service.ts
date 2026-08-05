@@ -128,9 +128,8 @@ export const sendMessage = async (
 };
 
 
-// Get User Chats
 export const getUserChats = async (userId: string) => {
-  return prisma.chat.findMany({
+  const chats = await prisma.chat.findMany({
     where: {
       type: "private",
       members: {
@@ -170,6 +169,24 @@ export const getUserChats = async (userId: string) => {
       updatedAt: "desc",
     },
   });
+
+  const chatsWithUnread = await Promise.all(
+    chats.map(async (chat) => {
+      const unreadCount = await prisma.message.count({
+        where: {
+          chatId: chat.id,
+          senderId: { not: userId },
+          status: { not: "read" },
+        },
+      });
+      return {
+        ...chat,
+        unreadCount,
+      };
+    }),
+  );
+
+  return chatsWithUnread;
 };
 
 // Get Chat Messages
@@ -189,6 +206,18 @@ export const getMessages = async (
   if (!member) {
     throw new Error("You are not a member of this chat");
   }
+
+  // Mark all unread messages from other senders as read
+  await prisma.message.updateMany({
+    where: {
+      chatId,
+      senderId: { not: userId },
+      status: { not: "read" },
+    },
+    data: {
+      status: "read",
+    },
+  });
 
   const skip = (page - 1) * limit;
 
@@ -309,12 +338,21 @@ export const getMyGroupService = async (userId: string) => {
 
   const lastMessage = member.chat.messages[0];
 
+  const unreadCount = await prisma.message.count({
+    where: {
+      chatId: member.chat.id,
+      senderId: { not: userId },
+      status: { not: "read" },
+    },
+  });
+
   return {
     id: member.chat.id,
     name: member.chat.name,
     inviteEnabled: member.chat.inviteEnabled,
     inviteCode: member.chat.inviteCode,
     role: member.role,
+    unreadCount,
     lastMessage: lastMessage
       ? {
           id: lastMessage.id,
@@ -933,6 +971,18 @@ export const getGroupMessagesService = async (userId: string) => {
   if (!member) {
     throw new Error("You are not a group member");
   }
+
+  // Mark all unread messages from other senders as read
+  await prisma.message.updateMany({
+    where: {
+      chatId: member.chatId,
+      senderId: { not: userId },
+      status: { not: "read" },
+    },
+    data: {
+      status: "read",
+    },
+  });
 
   const messages = await prisma.message.findMany({
     where: {

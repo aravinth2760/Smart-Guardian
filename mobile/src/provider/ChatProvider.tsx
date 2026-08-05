@@ -15,7 +15,6 @@ import {
   incrementUnread,
   updateChatLastMessage,
   updateGroupLastMessage,
-  appendMessage,
 } from "@/store/slices/chatSlice";
 import { socket } from "@/services/socket";
 
@@ -119,6 +118,7 @@ export default function ChatProvider({ children }: ChatProviderProps) {
 
       const currentUserId = user.id;
 
+      // Update last-message preview in the chat list
       dispatch(
         updateChatLastMessage({
           chatId: message.chatId,
@@ -126,6 +126,7 @@ export default function ChatProvider({ children }: ChatProviderProps) {
         }),
       );
 
+      // Update the group chat preview if this is a group message
       if (groupChat?.id === message.chatId) {
         dispatch(
           updateGroupLastMessage({
@@ -135,14 +136,16 @@ export default function ChatProvider({ children }: ChatProviderProps) {
             sender: message.sender,
           }),
         );
-        dispatch(appendMessage({ chatId: message.chatId, message }));
       }
 
+      // Only increment unread when:
+      // 1. The message is from someone else (not the current user)
+      // 2. The user is NOT actively viewing that specific chat screen
       if (
         message.senderId !== currentUserId &&
         activeChatIdRef.current !== message.chatId
       ) {
-        dispatch(incrementUnread(message.chatId));
+        dispatch(incrementUnread({ chatId: message.chatId, messageId: message.id }));
       }
     };
 

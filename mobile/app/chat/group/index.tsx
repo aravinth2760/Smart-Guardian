@@ -16,7 +16,13 @@ import {
 
 // Third-party
 import { router, useFocusEffect } from "expo-router";
-import { Check, CheckCheck, Info, Users } from "lucide-react-native";
+import {
+  Check,
+  CheckCheck,
+  Info,
+  SendHorizontal,
+  Users,
+} from "lucide-react-native";
 import { useDispatch, useSelector } from "react-redux";
 
 // Constants
@@ -250,33 +256,39 @@ export default function GroupChatScreen() {
               <View
                 style={[
                   styles.messageContainer,
-                  isMe && styles.myMessageContainer,
+                  isMe ? styles.myMessage : styles.otherMessage,
                 ]}
               >
                 {!isMe && <Text style={styles.senderName}>{senderName}</Text>}
 
-                <View
+                <Text
                   style={[
-                    styles.messageBubble,
-                    isMe ? styles.myBubble : styles.otherBubble,
+                    styles.messageText,
+                    isMe ? styles.myMessageText : styles.otherMessageText,
                   ]}
                 >
-                  <Text
-                    style={[styles.messageText, isMe && styles.myMessageText]}
-                  >
-                    {item.text}
-                  </Text>
-                </View>
+                  {item.text}
+                </Text>
 
-                <View style={[styles.metaRow, isMe && styles.myMetaRow]}>
-                  <Text style={[styles.time, isMe && styles.myTime]}>
+                <View style={styles.messageFooter}>
+                  <Text
+                    style={[
+                      styles.messageTime,
+                      isMe ? styles.myMessageTime : styles.otherMessageTime,
+                    ]}
+                  >
                     {new Date(item.createdAt).toLocaleTimeString("en-US", {
                       hour: "2-digit",
                       minute: "2-digit",
                       hour12: true,
                     })}
                   </Text>
-                  {isMe && <TickIcon status={item.status ?? "sent"} />}
+
+                  {isMe && (
+                    <View style={styles.tickWrapper}>
+                      <TickIcon status={item.status ?? "sent"} />
+                    </View>
+                  )}
                 </View>
               </View>
             );
@@ -299,9 +311,7 @@ export default function GroupChatScreen() {
               disabled={sending}
               onPress={handleSend}
             >
-              <Text style={styles.sendText}>
-                {sending ? "Sending..." : "Send"}
-              </Text>
+              <SendHorizontal size={20} color="#fff" />
             </Pressable>
           </View>
         ) : (
@@ -322,82 +332,117 @@ export default function GroupChatScreen() {
 // ── Styles ────────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  list: { padding: 16, paddingBottom: 20 },
-
-  messageContainer: { marginBottom: 16 },
-  myMessageContainer: { alignItems: "flex-end" },
-
-  senderName: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: colors.light.textSecondary,
-    marginBottom: 4,
-    marginLeft: 10,
+  container: {
+    flex: 1,
+    backgroundColor: colors.light.background,
+  },
+  // Messages
+  list: {
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    paddingBottom: 20,
   },
 
-  messageBubble: {
+  messageContainer: {
     maxWidth: "80%",
-    alignSelf: "flex-start",
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 18,
+    marginBottom: 10,
   },
-  myBubble: {
+
+  myMessage: {
+    alignSelf: "flex-end",
+    backgroundColor: "#FFFFFF",
+    borderBottomRightRadius: 5,
+  },
+
+  otherMessage: {
+    alignSelf: "flex-start",
     backgroundColor: colors.light.primary,
-    borderBottomRightRadius: 4,
-  },
-  otherBubble: {
-    backgroundColor: colors.light.card,
+    borderBottomLeftRadius: 5,
     borderWidth: 1,
     borderColor: colors.light.cardBorder,
-    borderBottomLeftRadius: 4,
   },
 
-  messageText: { fontSize: 16, color: colors.light.text, lineHeight: 22 },
-  myMessageText: { color: "#fff" },
+  senderName: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "rgba(255,255,255,0.85)",
+    marginBottom: 4,
+  },
 
-  metaRow: {
+  messageText: {
+    fontSize: 15,
+    lineHeight: 22,
+  },
+
+  myMessageText: {
+    color: colors.light.text,
+  },
+
+  otherMessageText: {
+    color: "#FFFFFF",
+  },
+
+  messageFooter: {
     flexDirection: "row",
+    justifyContent: "flex-end",
     alignItems: "center",
     marginTop: 4,
-    marginLeft: 10,
-    gap: 4,
   },
-  myMetaRow: { marginLeft: 0, marginRight: 10, justifyContent: "flex-end" },
 
-  time: { fontSize: 11, color: colors.light.textSecondary },
-  myTime: { color: colors.light.textSecondary },
+  tickWrapper: {
+    marginLeft: 4,
+  },
 
+  messageTime: {
+    fontSize: 10,
+    fontWeight: "500",
+  },
+
+  myMessageTime: {
+    color: colors.light.textSecondary,
+  },
+
+  otherMessageTime: {
+    color: "rgba(255,255,255,0.8)",
+  },
+
+  // Input
   inputContainer: {
     flexDirection: "row",
-    alignItems: "flex-end",
-    padding: 12,
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderTopWidth: 1,
     borderTopColor: colors.light.cardBorder,
     backgroundColor: colors.light.card,
   },
+
   input: {
     flex: 1,
-    minHeight: 44,
+    minHeight: 48,
     maxHeight: 120,
+    borderRadius: 24,
     backgroundColor: colors.light.backgroundSecondary,
-    borderRadius: 22,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    color: colors.light.text,
-    fontSize: 16,
-  },
-  sendButton: {
-    marginLeft: 10,
-    backgroundColor: colors.light.primary,
-    borderRadius: 22,
     paddingHorizontal: 18,
     paddingVertical: 12,
+    color: colors.light.text,
+    fontSize: 15,
+  },
+
+  sendButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.light.primary,
     justifyContent: "center",
     alignItems: "center",
+    marginLeft: 10,
   },
-  sendText: { color: "#fff", fontWeight: "700", fontSize: 15 },
 
+  // Empty State
   emptyState: {
     paddingVertical: 20,
     paddingHorizontal: 24,
@@ -406,7 +451,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.light.card,
     alignItems: "center",
   },
-  emptyTitle: { fontSize: 16, fontWeight: "600", color: colors.light.text },
+
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.light.text,
+  },
+
   emptySubtitle: {
     marginTop: 6,
     fontSize: 14,
